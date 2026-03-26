@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { login } from '../../features/auth/authService'
 import { useAuth } from '../../features/auth/useAuth'
 import { useRole } from '../../hooks/useRole'
+import './Login.css'
 
 function Login() {
   const navigate = useNavigate()
@@ -42,40 +43,40 @@ function Login() {
   }, [user, role, loading, roleLoading, navigate])
 
   if (loading || roleLoading) {
-    return <p>Laster...</p>
+    return <p className="login-page__message">Laster...</p>
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Logg inn</h1>
+    <div className="login-page">
+      <h1 className="login-page__title">Logg inn</h1>
 
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>E-post</label>
-          <br />
+      <form onSubmit={handleLogin} className="login-form">
+        <div className="login-form__field">
+          <label className="login-form__label">E-post</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="login-form__input"
           />
         </div>
 
-        <div style={{ marginTop: '1rem' }}>
-          <label>Passord</label>
-          <br />
+        <div className="login-form__field">
+          <label className="login-form__label">Passord</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="login-form__input"
           />
         </div>
 
-        <button type="submit" style={{ marginTop: '1rem' }}>
+        <button type="submit" className="login-form__submit">
           Logg inn
         </button>
       </form>
 
-      {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
+      {message && <p className="login-page__message">{message}</p>}
     </div>
   )
 }

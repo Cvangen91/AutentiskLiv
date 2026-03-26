@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { register } from '../../features/auth/authService'
+import './Register.css'
 
 function Register() {
   const navigate = useNavigate()
@@ -30,36 +31,36 @@ function Register() {
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Registrer deg</h1>
+    <div className="register-page">
+      <h1 className="register-page__title">Registrer deg</h1>
 
-      <form onSubmit={handleRegister}>
-        <div>
-          <label>E-post</label>
-          <br />
+      <form onSubmit={handleRegister} className="register-form">
+        <div className="register-form__field">
+          <label className="register-form__label">E-post</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="register-form__input"
           />
         </div>
 
-        <div style={{ marginTop: '1rem' }}>
-          <label>Passord</label>
-          <br />
+        <div className="register-form__field">
+          <label className="register-form__label">Passord</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="register-form__input"
           />
         </div>
 
-        <button type="submit" style={{ marginTop: '1rem' }}>
+        <button type="submit" className="register-form__submit">
           Registrer
         </button>
       </form>
 
-      {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
+      {message && <p className="register-page__message">{message}</p>}
     </div>
   )
 }

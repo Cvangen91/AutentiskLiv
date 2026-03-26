@@ -1,0 +1,97 @@
+.profile-page {
+  padding: 1.5rem 1rem 3rem;
+}
+
+.profile-page__title {
+  margin: 0 0 1rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.profile-page__info {
+  margin-bottom: 1rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.profile-page__logout-button {
+  display: block;
+  margin: 0 auto 2rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+}
+
+.profile-page__logout-button:hover {
+  background: var(--color-accent-hover);
+}
+
+.profile-page__section-title {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.profile-page__message {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.profile-page__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-course-card {
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  width: 100%;
+}
+
+.profile-course-card:hover {
+  border-color: var(--color-accent);
+}
+
+.profile-course-card__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.profile-course-card__text {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .profile-page {
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .profile-page__title {
+    text-align: left;
+    font-size: 2.5rem;
+  }
+
+  .profile-page__info {
+    text-align: left;
+  }
+
+  .profile-page__logout-button {
+    margin: 0 0 2rem;
+  }
+
+  .profile-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .profile-page__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
