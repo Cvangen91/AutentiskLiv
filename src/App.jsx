@@ -1,13 +1,7 @@
-import './App.css'
-import { BrowserRouter } from 'react-router-dom'
-import AppRoutes from './app/routes/AppRoutes'
+import Home from './pages/public/Home';
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
-  )
+  return <Home />;
 }
 
-export default App
+export default App;
