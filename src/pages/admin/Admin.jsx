@@ -1,32 +1,121 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../features/auth/useAuth'
 import { useRole } from '../../hooks/useRole'
 import { logout } from '../../features/auth/authService'
 import { supabase } from '../../lib/supabase/client'
+import AdminCourseForm from '../../components/admin/AdminCourseForm'
+import AdminCourseList from '../../components/admin/AdminCourseList'
+
+function normalizeCourse(row) {
+  const course = Array.isArray(row.courses) ? row.courses[0] : row.courses
+
+  return {
+    id: row.id,
+    title: row.title ?? '',
+    slug: row.slug ?? '',
+    description: row.description ?? '',
+    priceNok: row.price_nok ?? '',
+    status: row.status ?? 'draft',
+    coverImageUrl: row.cover_image_url ?? '',
+    courseId: course?.id ?? null,
+    introText: course?.intro_text ?? '',
+    difficultyLevel: course?.difficulty_level ?? '',
+    isSelfPaced: course?.is_self_paced ?? true,
+    visibility: course?.visibility ?? 'public',
+  }
+}
 
 function Admin() {
   const { user } = useAuth()
   const { role } = useRole()
 
-  const [title, setTitle] = useState('')
-  const [slug, setSlug] = useState('')
-  const [description, setDescription] = useState('')
-  const [priceNok, setPriceNok] = useState('')
-  const [status, setStatus] = useState('draft')
-
-  const [introText, setIntroText] = useState('')
-  const [difficultyLevel, setDifficultyLevel] = useState('')
-  const [isSelfPaced, setIsSelfPaced] = useState(true)
+  const [courses, setCourses] = useState([])
+  const [loadingCourses, setLoadingCourses] = useState(true)
+  const [coursesError, setCoursesError] = useState('')
+  const [selectedCourse, setSelectedCourse] = useState(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isListOpen, setIsListOpen] = useState(false)
 
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    async function fetchCourses() {
+      setLoadingCourses(true)
+      setCoursesError('')
+
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          id,
+          title,
+          slug,
+          description,
+          price_nok,
+          status,
+          cover_image_url,
+          courses (
+            id,
+            intro_text,
+            difficulty_level,
+            is_self_paced,
+            visibility
+          )
+        `)
+        .order('id', { ascending: false })
+
+      if (error) {
+        setCoursesError(error.message)
+        setCourses([])
+      } else {
+        setCourses((data || []).map(normalizeCourse))
+      }
+
+      setLoadingCourses(false)
+    }
+
+    fetchCourses()
+  }, [])
 
   async function handleLogout() {
     await logout()
   }
 
-  async function handleCreateProduct(e) {
-    e.preventDefault()
+  async function refreshCourses() {
+    setLoadingCourses(true)
+    setCoursesError('')
+
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        id,
+        title,
+        slug,
+        description,
+        price_nok,
+        status,
+        cover_image_url,
+        courses (
+          id,
+          intro_text,
+          difficulty_level,
+          is_self_paced,
+          visibility
+        )
+      `)
+      .order('id', { ascending: false })
+
+    if (error) {
+      setCoursesError(error.message)
+      setCourses([])
+    } else {
+      setCourses((data || []).map(normalizeCourse))
+    }
+
+    setLoadingCourses(false)
+  }
+
+  async function handleSaveCourse(formValues, editingCourse) {
     setMessage('')
 
     if (!user) {
@@ -36,51 +125,167 @@ function Admin() {
 
     setLoading(true)
 
-    const { data: product, error: productError } = await supabase
+    const payload = {
+      title: formValues.title,
+      slug: formValues.slug,
+      description: formValues.description,
+      price_nok: Number(formValues.priceNok),
+      status: formValues.status,
+    }
+
+    if (editingCourse) {
+      const { error: productError } = await supabase
+        .from('products')
+        .update(payload)
+        .eq('id', editingCourse.id)
+
+      if (productError) {
+        setMessage(`Feil ved oppdatering av produkt: ${productError.message}`)
+        setLoading(false)
+        return
+      }
+
+      const coursePayload = {
+        intro_text: formValues.introText,
+        difficulty_level: formValues.difficultyLevel || null,
+        is_self_paced: formValues.isSelfPaced,
+      }
+
+      if (editingCourse.courseId) {
+        const { error: courseError } = await supabase
+          .from('courses')
+          .update(coursePayload)
+          .eq('id', editingCourse.courseId)
+
+        if (courseError) {
+          setMessage(`Feil ved oppdatering av kurs: ${courseError.message}`)
+          setLoading(false)
+          return
+        }
+      } else {
+        const { error: courseError } = await supabase
+          .from('courses')
+          .insert({
+            product_id: editingCourse.id,
+            ...coursePayload,
+          })
+
+        if (courseError) {
+          setMessage(`Produkt oppdatert, men feil ved oppretting av kursdetaljer: ${courseError.message}`)
+          setLoading(false)
+          return
+        }
+      }
+
+      setMessage('Kurs oppdatert!')
+    } else {
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .insert({
+          ...payload,
+          product_type: 'course',
+          created_by: user.id,
+        })
+        .select()
+        .single()
+
+      if (productError) {
+        setMessage(`Feil ved lagring av produkt: ${productError.message}`)
+        setLoading(false)
+        return
+      }
+
+      const { error: courseError } = await supabase
+        .from('courses')
+        .insert({
+          product_id: product.id,
+          intro_text: formValues.introText,
+          difficulty_level: formValues.difficultyLevel || null,
+          is_self_paced: formValues.isSelfPaced,
+        })
+
+      if (courseError) {
+        setMessage(`Produkt lagret, men feil ved lagring av kurs: ${courseError.message}`)
+        setLoading(false)
+        return
+      }
+
+      setMessage('Produkt og kurs lagret!')
+    }
+
+    await refreshCourses()
+    setSelectedCourse(null)
+    setIsFormOpen(false)
+    setLoading(false)
+  }
+
+  async function handlePublishCourse(course) {
+    setMessage('')
+    setLoading(true)
+
+    const { error } = await supabase
       .from('products')
-      .insert({
-        title,
-        slug,
-        description,
-        product_type: 'course',
-        price_nok: Number(priceNok),
-        status,
-        created_by: user.id,
-      })
-      .select()
-      .single()
+      .update({ status: 'published' })
+      .eq('id', course.id)
+
+    if (error) {
+      setMessage(`Feil ved publisering: ${error.message}`)
+      setLoading(false)
+      return
+    }
+
+    setMessage('Kurs publisert!')
+    await refreshCourses()
+    setLoading(false)
+  }
+
+  async function handleDeleteCourse(course) {
+    const confirmed = window.confirm(`Vil du slette kurset "${course.title}"?`)
+
+    if (!confirmed) {
+      return
+    }
+
+    setMessage('')
+    setLoading(true)
+
+    if (course.courseId) {
+      const { error: courseError } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', course.courseId)
+
+      if (courseError) {
+        setMessage(`Feil ved sletting av kurs: ${courseError.message}`)
+        setLoading(false)
+        return
+      }
+    }
+
+    const { error: productError } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', course.id)
 
     if (productError) {
-      setMessage(`Feil ved lagring av produkt: ${productError.message}`)
+      setMessage(`Kurs slettet, men feil ved sletting av produkt: ${productError.message}`)
       setLoading(false)
+      await refreshCourses()
       return
     }
 
-    const { error: courseError } = await supabase
-      .from('courses')
-      .insert({
-        product_id: product.id,
-        intro_text: introText,
-        difficulty_level: difficultyLevel || null,
-        is_self_paced: isSelfPaced,
-      })
-
-    if (courseError) {
-      setMessage(`Produkt lagret, men feil ved lagring av kurs: ${courseError.message}`)
-      setLoading(false)
-      return
+    setMessage('Kurs slettet!')
+    if (selectedCourse?.id === course.id) {
+      setSelectedCourse(null)
+      setIsFormOpen(false)
     }
-
-    setMessage('Produkt og kurs lagret!')
-    setTitle('')
-    setSlug('')
-    setDescription('')
-    setPriceNok('')
-    setStatus('draft')
-    setIntroText('')
-    setDifficultyLevel('')
-    setIsSelfPaced(true)
+    await refreshCourses()
     setLoading(false)
+  }
+
+  function handleEditCourse(course) {
+    setSelectedCourse(course)
+    setIsFormOpen(true)
   }
 
   return (
@@ -130,146 +335,71 @@ function Admin() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-[2rem] border border-stone-200 bg-white/60 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
-                Kurs
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold text-stone-900">
-                Opprett kurs
-              </h2>
+        <details
+          open={isFormOpen}
+          onToggle={(event) => setIsFormOpen(event.currentTarget.open)}
+          className="mt-8 rounded-[2rem] border border-stone-200 bg-white/60 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md"
+        >
+          <summary className="cursor-pointer list-none rounded-[2rem] px-6 py-5 text-stone-900 sm:px-8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
+                  Kurs
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-stone-900">
+                  {selectedCourse ? 'Rediger kurs' : 'Opprett kurs'}
+                </h2>
+              </div>
+              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
+                Klikk for å åpne
+              </span>
             </div>
+          </summary>
+
+          <div className="border-t border-stone-200 px-6 pb-6 pt-2 sm:px-8 sm:pb-8">
+            <AdminCourseForm
+              course={selectedCourse}
+              loading={loading}
+              onSubmit={handleSaveCourse}
+              onCancelEditing={() => setSelectedCourse(null)}
+            />
           </div>
+        </details>
 
-          <form onSubmit={handleCreateProduct} className="mt-6 grid gap-5">
-            <div className="grid gap-5 lg:grid-cols-2">
-              <div className="grid gap-2">
-                <label htmlFor="title" className="text-sm font-semibold text-stone-700">
-                  Tittel
-                </label>
-                <input
-                  id="title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                />
+        <details
+          open={isListOpen}
+          onToggle={(event) => setIsListOpen(event.currentTarget.open)}
+          className="mt-8 rounded-[2rem] border border-stone-200 bg-white/60 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md"
+        >
+          <summary className="cursor-pointer list-none rounded-[2rem] px-6 py-5 text-stone-900 sm:px-8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
+                  Kurs
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-stone-900">
+                  Kursliste
+                </h2>
               </div>
-
-              <div className="grid gap-2">
-                <label htmlFor="slug" className="text-sm font-semibold text-stone-700">
-                  Slug
-                </label>
-                <input
-                  id="slug"
-                  type="text"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  required
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                />
-              </div>
+              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
+                Klikk for å åpne
+              </span>
             </div>
+          </summary>
 
-            <div className="grid gap-2">
-              <label htmlFor="description" className="text-sm font-semibold text-stone-700">
-                Beskrivelse
-              </label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-              />
-            </div>
+          <div className="border-t border-stone-200 px-6 pb-6 pt-2 sm:px-8 sm:pb-8">
+            <AdminCourseList
+              courses={courses}
+              loading={loadingCourses}
+              error={coursesError}
+              onEdit={handleEditCourse}
+              onDelete={handleDeleteCourse}
+              onPublish={handlePublishCourse}
+            />
+          </div>
+        </details>
 
-            <div className="grid gap-5 lg:grid-cols-2">
-              <div className="grid gap-2">
-                <label htmlFor="priceNok" className="text-sm font-semibold text-stone-700">
-                  Pris (NOK)
-                </label>
-                <input
-                  id="priceNok"
-                  type="number"
-                  value={priceNok}
-                  onChange={(e) => setPriceNok(e.target.value)}
-                  required
-                  min="0"
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <label htmlFor="status" className="text-sm font-semibold text-stone-700">
-                  Status
-                </label>
-                <select
-                  id="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                >
-                  <option value="draft">draft</option>
-                  <option value="published">published</option>
-                  <option value="archived">archived</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="border-t border-stone-200 pt-2" />
-
-            <div className="grid gap-5 lg:grid-cols-2">
-              <div className="grid gap-2">
-                <label htmlFor="introText" className="text-sm font-semibold text-stone-700">
-                  Introtekst
-                </label>
-                <textarea
-                  id="introText"
-                  value={introText}
-                  onChange={(e) => setIntroText(e.target.value)}
-                  rows={4}
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <label htmlFor="difficultyLevel" className="text-sm font-semibold text-stone-700">
-                  Vanskelighetsgrad
-                </label>
-                <input
-                  id="difficultyLevel"
-                  type="text"
-                  value={difficultyLevel}
-                  onChange={(e) => setDifficultyLevel(e.target.value)}
-                  placeholder="f.eks. beginner"
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                />
-                <label className="mt-3 flex items-center gap-3 rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm font-semibold text-stone-700">
-                  <input
-                    type="checkbox"
-                    checked={isSelfPaced}
-                    onChange={(e) => setIsSelfPaced(e.target.checked)}
-                    className="h-4 w-4 rounded border-stone-300 text-[#6f7c63] focus:ring-[#6f7c63]"
-                  />
-                  Selvstudium
-                </label>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255] disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {loading ? 'Lagrer...' : 'Lagre kurs'}
-            </button>
-          </form>
-
-          {message && <p className="mt-4 text-sm text-stone-700">{message}</p>}
-        </section>
+        {message && <p className="mt-4 text-sm text-stone-700">{message}</p>}
       </div>
     </div>
   )
