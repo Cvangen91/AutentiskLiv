@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase/client'
 import { useAuth } from '../../features/auth/useAuth'
-import './Courses.css'
 
 function Courses() {
   const [courses, setCourses] = useState([])
@@ -125,11 +124,19 @@ function Courses() {
   }
 
   if (loading) {
-    return <p className="courses-page__loading">Laster kurs...</p>
+    return (
+      <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pt-28 text-center text-stone-700 sm:px-6 lg:px-8">
+        Laster kurs...
+      </div>
+    )
   }
 
   if (errorMessage) {
-    return <p className="courses-page__error">Feil: {errorMessage}</p>
+    return (
+      <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pt-28 text-center text-stone-700 sm:px-6 lg:px-8">
+        Feil: {errorMessage}
+      </div>
+    )
   }
 
   const selectedCourse = selectedProduct?.courses
@@ -137,80 +144,152 @@ function Courses() {
     selectedCourse && myEnrollmentCourseIds.includes(selectedCourse.id)
 
   return (
-    <div className="courses-page">
-      <h1 className="courses-page__title">Kurs</h1>
-
-      {selectedProduct && (
-        <section className="courses-page__selected">
-          <h2 className="courses-page__selected-title">{selectedProduct.title}</h2>
-          <p className="courses-page__selected-text">{selectedProduct.description}</p>
-          <p className="courses-page__selected-text">
-            <strong>Pris:</strong> {selectedProduct.price_nok} NOK
+    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <section className="mb-8 rounded-[1.75rem] border border-stone-200 bg-white/60 px-6 py-5 shadow-[0_16px_40px_rgba(0,0,0,0.06)] backdrop-blur-md sm:px-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
+            Kurs
           </p>
-          <p className="courses-page__selected-text">
-            <strong>Intro:</strong> {selectedCourse?.intro_text || 'Ingen intro enda'}
+          <p className="mt-2 max-w-3xl text-base leading-7 text-stone-700">
+            Her kan dere legge inn en kort introduksjon eller en liten tekst om kursene før man klikker seg videre til detaljene under.
           </p>
-          <p className="courses-page__selected-text">
-            <strong>Nivå:</strong> {selectedCourse?.difficulty_level || 'Ikke satt'}
-          </p>
-          <p className="courses-page__selected-text">
-            <strong>Format:</strong>{' '}
-            {selectedCourse?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
-          </p>
-
-          <div className="courses-page__actions">
-            {selectedIsEnrolled ? (
-              <button type="button" className="courses-page__secondary-button">
-                Allerede påmeldt
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="courses-page__primary-button"
-                onClick={() => handleEnrollClick(selectedProduct)}
-              >
-                Meld deg på
-              </button>
-            )}
-
-            <button
-              type="button"
-              className="courses-page__secondary-button"
-              onClick={() => setSelectedProduct(null)}
-            >
-              Lukk
-            </button>
-          </div>
         </section>
-      )}
 
-      {courses.length === 0 ? (
-        <p className="courses-page__empty">Ingen publiserte kurs enda.</p>
-      ) : (
-        <div className="courses-page__grid">
-          {courses.map((product) => {
-            const course = product.courses
-            const isSelected = selectedProduct?.id === product.id
-            const isEnrolled = course && myEnrollmentCourseIds.includes(course.id)
+        {selectedProduct && (
+          <section className="mb-8 rounded-[2rem] border border-stone-200 bg-white/65 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-full bg-[#6f7c63] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                Valgt kurs
+              </span>
+              <span className="rounded-full border border-stone-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
+                {selectedCourse?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
+              </span>
+            </div>
 
-            return (
-              <button
-                key={product.id}
-                type="button"
-                className={`course-card ${isSelected ? 'course-card--active' : ''}`}
-                onClick={() => handleSelectProduct(product)}
-              >
-                <h2 className="course-card__title">{product.title}</h2>
-                <p className="course-card__text">{product.description}</p>
-                <p className="course-card__text">Pris: {product.price_nok} NOK</p>
-                <p className="course-card__status">
-                  {isEnrolled ? 'Allerede påmeldt' : 'Klikk for mer info'}
+            <div className="mt-4 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+              <div>
+                <h2 className="text-3xl font-semibold text-stone-900">
+                  {selectedProduct.title}
+                </h2>
+                <p className="mt-4 text-base leading-8 text-stone-700">
+                  {selectedProduct.description}
                 </p>
+
+                <div className="mt-6 space-y-4 text-stone-700">
+                  <p>
+                    <span className="font-semibold text-stone-900">Intro:</span>{' '}
+                    {selectedCourse?.intro_text || 'Ingen intro enda'}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-stone-900">Format:</span>{' '}
+                    {selectedCourse?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="rounded-2xl bg-stone-50 p-4">
+                  <dt className="text-sm font-medium text-stone-500">Pris</dt>
+                  <dd className="mt-1 text-lg font-semibold text-stone-900">
+                    {selectedProduct.price_nok} NOK
+                  </dd>
+                </div>
+                <div className="rounded-2xl bg-stone-50 p-4">
+                  <dt className="text-sm font-medium text-stone-500">Nivå</dt>
+                  <dd className="mt-1 text-lg font-semibold text-stone-900">
+                    {selectedCourse?.difficulty_level || 'Ikke satt'}
+                  </dd>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              {selectedIsEnrolled ? (
+                <button
+                  type="button"
+                  className="rounded-2xl bg-stone-200 px-5 py-3 font-semibold text-stone-600"
+                >
+                  Allerede påmeldt
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="rounded-2xl bg-[#6f7c63] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+                  onClick={() => handleEnrollClick(selectedProduct)}
+                >
+                  Meld deg på
+                </button>
+              )}
+
+              <button
+                type="button"
+                className="rounded-2xl border border-stone-200 px-5 py-3 font-semibold text-stone-700 transition hover:bg-stone-50"
+                onClick={() => setSelectedProduct(null)}
+              >
+                Lukk
               </button>
-            )
-          })}
-        </div>
-      )}
+            </div>
+          </section>
+        )}
+
+        {courses.length === 0 ? (
+          <div className="rounded-[2rem] border border-stone-200 bg-white/60 p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md">
+            <p className="text-lg font-medium text-stone-700">Ingen publiserte kurs enda.</p>
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {courses.map((product) => {
+              const course = product.courses
+              const isSelected = selectedProduct?.id === product.id
+              const isEnrolled = course && myEnrollmentCourseIds.includes(course.id)
+
+              return (
+                <button
+                  key={product.id}
+                  type="button"
+                  onClick={() => handleSelectProduct(product)}
+                  className={`group relative overflow-hidden rounded-[2rem] border bg-white/70 p-6 text-left shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.12)] ${isSelected ? 'border-[#6f7c63] ring-4 ring-[#6f7c63]/10' : 'border-stone-200'}`}
+                >
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-[#6f7c63]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f7c63]">
+                      Kurs
+                    </span>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${isEnrolled ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-600'}`}>
+                      {isEnrolled ? 'Påmeldt' : 'Ledig plass'}
+                    </span>
+                  </div>
+
+                  <h2 className="text-2xl font-semibold text-stone-900">
+                    {product.title}
+                  </h2>
+                  <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">
+                    {product.description}
+                  </p>
+
+                  <div className="mt-6 grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
+                    <div className="rounded-2xl bg-stone-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
+                      <p className="mt-1 text-base font-semibold text-stone-900">{product.price_nok} NOK</p>
+                    </div>
+                    <div className="rounded-2xl bg-stone-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Format</p>
+                      <p className="mt-1 text-base font-semibold text-stone-900">
+                        {course?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end border-t border-stone-200 pt-5">
+                    <span className="rounded-full bg-[#6f7c63] px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-[#617255]">
+                      Mer info
+                    </span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

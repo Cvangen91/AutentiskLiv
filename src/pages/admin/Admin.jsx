@@ -3,7 +3,6 @@ import { useAuth } from '../../features/auth/useAuth'
 import { useRole } from '../../hooks/useRole'
 import { logout } from '../../features/auth/authService'
 import { supabase } from '../../lib/supabase/client'
-import './Admin.css'
 
 function Admin() {
   const { user } = useAuth()
@@ -85,146 +84,193 @@ function Admin() {
   }
 
   return (
-    <div className="admin-page">
-      <h1 className="admin-page__title">Admin</h1>
+    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <section className="rounded-[2.25rem] border border-stone-200 bg-white/60 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
+            Admin
+          </p>
+          <div className="mt-4 grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+            <div>
+              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                Opprett og administrer kurs
+              </h1>
+              <p className="mt-4 max-w-2xl text-lg leading-8 text-stone-700">
+                Her kan du opprette nye kurs og fylle inn innhold som senere vises i kursoversikten.
+              </p>
+            </div>
 
-      <div className="admin-page__info">
-        <p>Innlogget som: {user?.email}</p>
-        <p>Rolle: {role}</p>
-      </div>
-
-      <button
-        onClick={handleLogout}
-        className="admin-page__logout-button"
-      >
-        Logg ut
-      </button>
-
-      <section className="admin-page__section">
-        <h2 className="admin-page__section-title">Opprett kurs</h2>
-
-        <form onSubmit={handleCreateProduct} className="admin-form">
-          <div className="admin-form__field">
-            <label htmlFor="title" className="admin-form__label">
-              Tittel
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="admin-form__input"
-            />
+            <div className="grid gap-4 rounded-[1.75rem] bg-[#6f7c63]/10 p-5 sm:grid-cols-2">
+              <div className="rounded-[1.4rem] bg-white/80 p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  Innlogget som
+                </p>
+                <p className="mt-2 break-words text-base font-semibold text-stone-900">
+                  {user?.email}
+                </p>
+              </div>
+              <div className="rounded-[1.4rem] bg-white/80 p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  Rolle
+                </p>
+                <p className="mt-2 text-base font-semibold text-stone-900">
+                  {role}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="admin-form__field">
-            <label htmlFor="slug" className="admin-form__label">
-              Slug
-            </label>
-            <input
-              id="slug"
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              required
-              className="admin-form__input"
-            />
-          </div>
-
-          <div className="admin-form__field">
-            <label htmlFor="description" className="admin-form__label">
-              Beskrivelse
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="admin-form__textarea"
-            />
-          </div>
-
-          <div className="admin-form__field">
-            <label htmlFor="priceNok" className="admin-form__label">
-              Pris (NOK)
-            </label>
-            <input
-              id="priceNok"
-              type="number"
-              value={priceNok}
-              onChange={(e) => setPriceNok(e.target.value)}
-              required
-              min="0"
-              className="admin-form__input"
-            />
-          </div>
-
-          <div className="admin-form__field">
-            <label htmlFor="status" className="admin-form__label">
-              Status
-            </label>
-            <select
-              id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="admin-form__select"
+          <div className="mt-8">
+            <button
+              onClick={handleLogout}
+              className="rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
             >
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-              <option value="archived">archived</option>
-            </select>
+              Logg ut
+            </button>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-[2rem] border border-stone-200 bg-white/60 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
+                Kurs
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-stone-900">
+                Opprett kurs
+              </h2>
+            </div>
           </div>
 
-          <div className="admin-form__divider" />
+          <form onSubmit={handleCreateProduct} className="mt-6 grid gap-5">
+            <div className="grid gap-5 lg:grid-cols-2">
+              <div className="grid gap-2">
+                <label htmlFor="title" className="text-sm font-semibold text-stone-700">
+                  Tittel
+                </label>
+                <input
+                  id="title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+                />
+              </div>
 
-          <div className="admin-form__field">
-            <label htmlFor="introText" className="admin-form__label">
-              Introtekst
-            </label>
-            <textarea
-              id="introText"
-              value={introText}
-              onChange={(e) => setIntroText(e.target.value)}
-              rows={3}
-              className="admin-form__textarea"
-            />
-          </div>
+              <div className="grid gap-2">
+                <label htmlFor="slug" className="text-sm font-semibold text-stone-700">
+                  Slug
+                </label>
+                <input
+                  id="slug"
+                  type="text"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  required
+                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+                />
+              </div>
+            </div>
 
-          <div className="admin-form__field">
-            <label htmlFor="difficultyLevel" className="admin-form__label">
-              Vanskelighetsgrad
-            </label>
-            <input
-              id="difficultyLevel"
-              type="text"
-              value={difficultyLevel}
-              onChange={(e) => setDifficultyLevel(e.target.value)}
-              placeholder="f.eks. beginner"
-              className="admin-form__input"
-            />
-          </div>
+            <div className="grid gap-2">
+              <label htmlFor="description" className="text-sm font-semibold text-stone-700">
+                Beskrivelse
+              </label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+              />
+            </div>
 
-          <label className="admin-form__checkbox-label">
-            <input
-              type="checkbox"
-              checked={isSelfPaced}
-              onChange={(e) => setIsSelfPaced(e.target.checked)}
-            />
-            <span>Selvstudium</span>
-          </label>
+            <div className="grid gap-5 lg:grid-cols-2">
+              <div className="grid gap-2">
+                <label htmlFor="priceNok" className="text-sm font-semibold text-stone-700">
+                  Pris (NOK)
+                </label>
+                <input
+                  id="priceNok"
+                  type="number"
+                  value={priceNok}
+                  onChange={(e) => setPriceNok(e.target.value)}
+                  required
+                  min="0"
+                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="admin-form__submit"
-          >
-            {loading ? 'Lagrer...' : 'Lagre kurs'}
-          </button>
-        </form>
+              <div className="grid gap-2">
+                <label htmlFor="status" className="text-sm font-semibold text-stone-700">
+                  Status
+                </label>
+                <select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+                >
+                  <option value="draft">draft</option>
+                  <option value="published">published</option>
+                  <option value="archived">archived</option>
+                </select>
+              </div>
+            </div>
 
-        {message && <p className="admin-page__message">{message}</p>}
-      </section>
+            <div className="border-t border-stone-200 pt-2" />
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              <div className="grid gap-2">
+                <label htmlFor="introText" className="text-sm font-semibold text-stone-700">
+                  Introtekst
+                </label>
+                <textarea
+                  id="introText"
+                  value={introText}
+                  onChange={(e) => setIntroText(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <label htmlFor="difficultyLevel" className="text-sm font-semibold text-stone-700">
+                  Vanskelighetsgrad
+                </label>
+                <input
+                  id="difficultyLevel"
+                  type="text"
+                  value={difficultyLevel}
+                  onChange={(e) => setDifficultyLevel(e.target.value)}
+                  placeholder="f.eks. beginner"
+                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+                />
+                <label className="mt-3 flex items-center gap-3 rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm font-semibold text-stone-700">
+                  <input
+                    type="checkbox"
+                    checked={isSelfPaced}
+                    onChange={(e) => setIsSelfPaced(e.target.checked)}
+                    className="h-4 w-4 rounded border-stone-300 text-[#6f7c63] focus:ring-[#6f7c63]"
+                  />
+                  Selvstudium
+                </label>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {loading ? 'Lagrer...' : 'Lagre kurs'}
+            </button>
+          </form>
+
+          {message && <p className="mt-4 text-sm text-stone-700">{message}</p>}
+        </section>
+      </div>
     </div>
   )
 }

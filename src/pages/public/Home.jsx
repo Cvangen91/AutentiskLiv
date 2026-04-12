@@ -1,8 +1,8 @@
 import logoMark from '../../assets/path41-6.png';
 import logoText from '../../assets/text47-6.png';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
-
 import anneImage from '../../assets/images/Anne2.jpg';
 
 const courses = [{}, {}, {}, {}, {}];
@@ -118,33 +118,37 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="about" className="bg-[#ece7dd] px-6 py-24">
-          <div className="mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2">
-            <div>
-              <h2 className="mb-8 text-5xl font-semibold text-stone-900">
-                Om Anne
-              </h2>
-
-              <p className="mb-8 text-2xl leading-relaxed text-stone-700">
-                Biografi kommer snart. Her skal det stå litt om Anne, hennes bakgrunn,
-                erfaring og hva Autentisk Liv handler om.
+        <section className="bg-[#ece7dd] px-6 py-24">
+          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+            <div className="order-2 lg:order-1">
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
+                Her kan du legge inn en kort introduksjon om Anne, hva hun jobber med og hvorfor Autentisk Liv finnes.
               </p>
 
-              <p className="mb-8 text-2xl leading-relaxed text-stone-700">
-                Denne delen kan dere fylle ut senere når teksten er klar.
-              </p>
-
-              <p className="text-2xl leading-relaxed text-stone-700">
-                Målet nå er bare å ha layouten på plass.
-              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/about"
+                  className="inline-flex items-center justify-center rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+                >
+                  Les mer om meg
+                </Link>
+                <Link
+                  to="/courses"
+                  className="inline-flex items-center justify-center rounded-2xl border border-stone-200 px-5 py-3.5 font-semibold text-stone-700 transition hover:bg-stone-50"
+                >
+                  Se kursene
+                </Link>
+              </div>
             </div>
 
-            <div className="overflow-hidden rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
-              <img
-                src={anneImage}
-                alt="Anne"
-                className="h-full w-full object-cover"
-              />
+            <div className="order-1 flex justify-center lg:order-2">
+              <div className="w-full max-w-sm overflow-hidden rounded-[2rem] border border-stone-200 bg-stone-50 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+                <img
+                  src={anneImage}
+                  alt="Anne"
+                  className="aspect-[4/5] h-full w-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </section>

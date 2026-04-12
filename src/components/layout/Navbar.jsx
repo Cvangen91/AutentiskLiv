@@ -61,8 +61,8 @@ function Navbar() {
           <Link to="/courses" className={navLinkClass}>
             Kurs
           </Link>
-          <Link to="/#about" className={navLinkClass}>
-            Om Anne
+          <Link to="/about" className={navLinkClass}>
+            Om meg
           </Link>
 
           {user && (
@@ -124,8 +124,8 @@ function Navbar() {
           <Link to="/courses" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
             Kurs
           </Link>
-          <Link to="/#about" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
-            Om Anne
+          <Link to="/about" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
+            Om meg
           </Link>
           {user && (
             <Link to="/profile" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
