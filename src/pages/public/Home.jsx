@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase/client';
 import anneImage from '../../assets/images/Anne2.jpg';
+import video from '../../assets/videos/AutentiskLivLoop.mp4'
 
 export default function Home() {
   const scrollRef = useRef(null);
@@ -64,10 +65,19 @@ export default function Home() {
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
       <main>
       <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-black/15" />
-            <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#ece7dd]/40 to-[#ece7dd]" />
-          </div>
+      <div className="absolute inset-0">
+  <video
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="absolute inset-0 h-full w-full object-cover"
+  >
+    <source src={video} type="video/mp4" />
+  </video>
+
+  <div className="absolute inset-0 bg-black/15" />
+</div>
 
           <div className="relative z-10 min-h-screen">
             <div className="flex min-h-screen items-center justify-center px-6">
