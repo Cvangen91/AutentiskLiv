@@ -65,57 +65,59 @@ export default function Home() {
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
       <main>
       <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
-      <div className="absolute inset-0">
-  <video
-    autoPlay
-    loop
-    muted
-    playsInline
-    className="absolute inset-0 h-full w-full object-cover"
-  >
-    <source src={video} type="video/mp4" />
-  </video>
+        <div className="absolute inset-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+          >
+            <source src={video} type="video/mp4" />
+          </video>
 
-  <div className="absolute inset-0 bg-black/15" />
-</div>
+          <div className="absolute inset-0 bg-black/15" />
+        </div>
 
-          <div className="relative z-10 min-h-screen">
-            <div className="flex min-h-screen items-center justify-center px-6">
-              <div className="hero-logo-wrap">
-                <div className="hero-logo-inner">
-                  <img
-                    src={logoMark}
-                    alt="Autentisk Liv symbol"
-                    className="hero-logo-mark"
-                  />
-                  <img
-                    src={logoText}
-                    alt="Autentisk Liv"
-                    className="hero-logo-text"
-                  />
-                </div>
+        <div className="relative z-30 min-h-screen">
+          <div className="flex min-h-screen items-center justify-center px-6">
+            <div className="hero-logo-wrap">
+              <div className="hero-logo-inner">
+                <img
+                  src={logoMark}
+                  alt="Autentisk Liv symbol"
+                  className="hero-logo-mark"
+                />
+                <img
+                  src={logoText}
+                  alt="Autentisk Liv"
+                  className="hero-logo-text"
+                />
               </div>
             </div>
-
-            <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center text-center">
-              <p className="hero-subtitle">
-                Din reise mot autentisitet, indre styrke og personlig vekst
-              </p>
-              <div className="scroll-indicator">
-  <svg width="28" height="18" viewBox="0 0 28 18">
-    <path
-      d="M2 2 L14 16 L26 2"
-      stroke="rgba(17, 24, 39, 0.85)"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-  </svg>
-  </div>
-  </div>
           </div>
-        </section>
+
+          <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
+          <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+  Din reise mot autentisitet, indre styrke og personlig vekst
+</p>
+            <div className="scroll-indicator">
+              <svg width="28" height="18" viewBox="0 0 28 18">
+                <path
+                  d="M2 2 L14 16 L26 2"
+                  stroke="rgba(255,255,255,0.9)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
+      </section>
 
         <section id="courses" className="bg-[#ece7dd] py-24">
           <h2 className="mb-14 text-center text-4xl font-semibold md:text-5xl">

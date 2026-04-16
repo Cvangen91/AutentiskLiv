@@ -22,7 +22,7 @@ function Navbar() {
     }
 
     const handleScroll = () => {
-      setScrolledPastHero(window.scrollY > window.innerHeight * 0.55)
+      setScrolledPastHero(window.scrollY > window.innerHeight * 0.8)
     }
 
     handleScroll()
@@ -37,25 +37,38 @@ function Navbar() {
 
   const navLinkClass = 'transition hover:opacity-70'
   const headerClass = scrolledPastHero
-    ? 'border-b border-stone-200 bg-white/92 shadow-md backdrop-blur-md'
-    : 'bg-transparent'
+  ? 'border-b border-stone-200 bg-white/92 shadow-md backdrop-blur-md'
+  : 'bg-transparent shadow-none backdrop-blur-0'
 
   const authButtonClass = scrolledPastHero
     ? 'rounded-xl bg-[#6f7c63] px-5 py-2.5 text-[15px] font-medium text-white shadow-sm transition-all duration-500 hover:bg-[#617255]'
     : 'rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-[15px] font-medium text-white backdrop-blur-sm transition-all duration-500 hover:bg-white/18'
 
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${headerClass}`}>
+    <header
+    className={`inset-x-0 top-0 z-50 transform transition-all duration-700 ease-out ${
+      scrolledPastHero
+        ? 'fixed translate-y-0 opacity-100'
+        : 'absolute translate-y-0 opacity-100'
+    } ${headerClass}`}
+  >
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-4 py-4 sm:px-8 sm:py-5">
-        <div className="flex items-center">
-          <Link to="/" className="flex items-center transition hover:opacity-80">
-            <img
-              src={logo}
-              alt="Autentisk Liv logo"
-              className="h-10 w-auto object-contain sm:h-12"
-            />
-          </Link>
-        </div>
+      <div className="flex items-center">
+      <Link
+  to="/"
+  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+  className={`flex items-center transition-all duration-500 hover:opacity-80 ${
+    scrolledPastHero ? 'opacity-100' : 'pointer-events-none opacity-0'
+  }`}
+
+  >
+    <img
+      src={logo}
+      alt="Autentisk Liv logo"
+      className="h-10 w-auto object-contain sm:h-12"
+    />
+  </Link>
+</div>
 
         <nav className={`hidden items-center justify-center transition-all duration-500 md:flex ${scrolledPastHero ? 'gap-10 text-xl font-medium text-stone-700' : 'gap-16 text-[22px] font-light tracking-wide text-white'}`}>
           <Link to="/courses" className={navLinkClass}>
