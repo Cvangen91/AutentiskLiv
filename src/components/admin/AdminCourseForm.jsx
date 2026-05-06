@@ -1,36 +1,56 @@
 import { useEffect, useState } from 'react'
+import defaultCourseImage from '../../constants/defaultCourseImage'
 
 const defaultFormState = {
   title: '',
-  slug: '',
   description: '',
   priceNok: '',
   status: 'draft',
-  introText: '',
-  difficultyLevel: '',
-  isSelfPaced: true,
+  coverImageFile: null,
+  hasCapacityLimit: false,
+  capacityLimit: '',
+  deliveryMode: 'online',
+  startAt: '',
+  locationText: '',
 }
 
 function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
   const [formState, setFormState] = useState(defaultFormState)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('')
 
   useEffect(() => {
     if (course) {
       setFormState({
         title: course.title ?? '',
-        slug: course.slug ?? '',
         description: course.description ?? '',
         priceNok: course.priceNok ?? '',
         status: course.status ?? 'draft',
-        introText: course.introText ?? '',
-        difficultyLevel: course.difficultyLevel ?? '',
-        isSelfPaced: course.isSelfPaced ?? true,
+        coverImageFile: null,
+        hasCapacityLimit: course.hasCapacityLimit ?? false,
+        capacityLimit: course.capacityLimit ?? '',
+        deliveryMode: course.deliveryMode ?? 'online',
+        startAt: course.startAt ?? '',
+        locationText: course.locationText ?? '',
       })
       return
     }
 
     setFormState(defaultFormState)
   }, [course])
+
+  useEffect(() => {
+    if (!formState.coverImageFile) {
+      setImagePreviewUrl('')
+      return
+    }
+
+    const previewUrl = URL.createObjectURL(formState.coverImageFile)
+    setImagePreviewUrl(previewUrl)
+
+    return () => {
+      URL.revokeObjectURL(previewUrl)
+    }
+  }, [formState.coverImageFile])
 
   function updateField(field, value) {
     setFormState((current) => ({
@@ -62,17 +82,31 @@ function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
         </div>
 
         <div className="grid gap-2">
-          <label htmlFor="slug" className="text-sm font-semibold text-stone-700">
-            Slug
+          <label htmlFor="coverImageFile" className="text-sm font-semibold text-stone-700">
+            Kursbilde
           </label>
           <input
-            id="slug"
-            type="text"
-            value={formState.slug}
-            onChange={(event) => updateField('slug', event.target.value)}
-            required
-            className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+            id="coverImageFile"
+            type="file"
+            accept="image/*"
+            onChange={(event) => updateField('coverImageFile', event.target.files?.[0] || null)}
+            className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[#6f7c63] file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-[#617255] focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
           />
+          <p className="text-xs text-stone-500">Last opp et bilde som vises på kurset. PNG, JPG eller WebP fungerer best.</p>
+          {!formState.coverImageFile && (
+            <img
+              src={course?.coverImageUrl || defaultCourseImage}
+              alt={course?.coverImageUrl ? 'Nåværende kursbilde' : 'Standard kursbilde'}
+              className="mt-2 h-40 w-full rounded-2xl object-cover"
+            />
+          )}
+          {imagePreviewUrl && (
+            <img
+              src={imagePreviewUrl}
+              alt="Forhåndsvisning av nytt kursbilde"
+              className="mt-2 h-40 w-full rounded-2xl object-cover"
+            />
+          )}
         </div>
       </div>
 
@@ -126,40 +160,79 @@ function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="grid gap-2">
-          <label htmlFor="introText" className="text-sm font-semibold text-stone-700">
-            Introtekst
+          <label htmlFor="deliveryMode" className="text-sm font-semibold text-stone-700">
+            Fysisk eller nettbasert
           </label>
-          <textarea
-            id="introText"
-            value={formState.introText}
-            onChange={(event) => updateField('introText', event.target.value)}
-            rows={4}
+          <select
+            id="deliveryMode"
+            value={formState.deliveryMode}
+            onChange={(event) => updateField('deliveryMode', event.target.value)}
             className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+          >
+            <option value="online">Nettbasert</option>
+            <option value="physical">Fysisk</option>
+          </select>
+        </div>
+
+        <div className="grid gap-2">
+          <label htmlFor="startAt" className="text-sm font-semibold text-stone-700">
+            Tid (dato og klokkeslett)
+          </label>
+          <input
+            id="startAt"
+            type="datetime-local"
+            value={formState.startAt}
+            onChange={(event) => updateField('startAt', event.target.value)}
+            className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+          />
+          <p className="text-xs text-stone-500">Kan stå tom for faste/løpende kurs.</p>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-2">
+          <label className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm font-semibold text-stone-700">
+            <input
+              type="checkbox"
+              checked={formState.hasCapacityLimit}
+              onChange={(event) => {
+                updateField('hasCapacityLimit', event.target.checked)
+                if (!event.target.checked) {
+                  updateField('capacityLimit', '')
+                }
+              }}
+              className="h-4 w-4 rounded border-stone-300 text-[#6f7c63] focus:ring-[#6f7c63]"
+            />
+            Begrens antall plasser
+          </label>
+
+          <input
+            id="capacityLimit"
+            type="number"
+            value={formState.capacityLimit}
+            onChange={(event) => updateField('capacityLimit', event.target.value)}
+            disabled={!formState.hasCapacityLimit}
+            required={formState.hasCapacityLimit}
+            min="1"
+            placeholder="Antall plasser"
+            className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition disabled:cursor-not-allowed disabled:bg-stone-100 focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
           />
         </div>
 
         <div className="grid gap-2">
-          <label htmlFor="difficultyLevel" className="text-sm font-semibold text-stone-700">
-            Vanskelighetsgrad
+          <label htmlFor="locationText" className="text-sm font-semibold text-stone-700">
+            Sted (hvis kurs er fysisk)
           </label>
           <input
-            id="difficultyLevel"
+            id="locationText"
             type="text"
-            value={formState.difficultyLevel}
-            onChange={(event) => updateField('difficultyLevel', event.target.value)}
-            placeholder="f.eks. beginner"
-            className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+            value={formState.locationText}
+            onChange={(event) => updateField('locationText', event.target.value)}
+            disabled={formState.deliveryMode !== 'physical'}
+            required={formState.deliveryMode === 'physical'}
+            placeholder="F.eks. Oslo sentrum"
+            className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition disabled:cursor-not-allowed disabled:bg-stone-100 focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
           />
-
-          <label className="mt-3 flex items-center gap-3 rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm font-semibold text-stone-700">
-            <input
-              type="checkbox"
-              checked={formState.isSelfPaced}
-              onChange={(event) => updateField('isSelfPaced', event.target.checked)}
-              className="h-4 w-4 rounded border-stone-300 text-[#6f7c63] focus:ring-[#6f7c63]"
-            />
-            Selvstudium
-          </label>
         </div>
       </div>
 

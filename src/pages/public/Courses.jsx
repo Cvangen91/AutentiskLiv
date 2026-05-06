@@ -2,8 +2,36 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase/client'
 import { useAuth } from '../../features/auth/useAuth'
+import defaultCourseImage from '../../constants/defaultCourseImage'
 
-function Courses() {
+function formatCourseDate(value) {
+  if (!value) return 'Fast/løpende kurs'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Ugyldig dato'
+
+  return date.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function hasValidCapacity(courseInfo) {
+  if (!courseInfo?.has_capacity_limit) {
+    return false
+  }
+
+  const capacity = Number(courseInfo.capacity_limit)
+  return Number.isFinite(capacity) && capacity > 0
+}
+
+function hasValidStartAt(value) {
+  if (!value) {
+    return false
+  }
+
+  const date = new Date(value)
+  return !Number.isNaN(date.getTime())
+}
+
+export default function Courses() {
   const [courses, setCourses] = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [myEnrollmentCourseIds, setMyEnrollmentCourseIds] = useState([])
@@ -22,15 +50,16 @@ function Courses() {
         .select(`
           id,
           title,
-          slug,
           description,
           price_nok,
           cover_image_url,
           courses (
             id,
-            intro_text,
-            difficulty_level,
-            is_self_paced,
+            has_capacity_limit,
+            capacity_limit,
+            delivery_mode,
+            start_at,
+            location_text,
             visibility
           )
         `)
@@ -140,65 +169,60 @@ function Courses() {
   }
 
   const selectedCourse = selectedProduct?.courses
-  const selectedIsEnrolled =
-    selectedCourse && myEnrollmentCourseIds.includes(selectedCourse.id)
+  const selectedIsEnrolled = selectedCourse && myEnrollmentCourseIds.includes(selectedCourse.id)
 
   return (
     <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <section className="mb-8 rounded-[1.75rem] border border-stone-200 bg-white/60 px-6 py-5 shadow-[0_16px_40px_rgba(0,0,0,0.06)] backdrop-blur-md sm:px-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
-            Kurs
-          </p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">Kurs</p>
           <p className="mt-2 max-w-3xl text-base leading-7 text-stone-700">
-            Her kan dere legge inn en kort introduksjon eller en liten tekst om kursene før man klikker seg videre til detaljene under.
+            Hos Autentisk Liv tilbys kurs og events innen healing, energiarbeid, personlig utvikling,
+            workshops og events. Arrangementene passer både for deg som er nysgjerrig og for deg som
+            ønsker å gå dypere i egen utviklingsreise.
           </p>
         </section>
 
         {selectedProduct && (
           <section className="mb-8 rounded-[2rem] border border-stone-200 bg-white/65 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-[#6f7c63] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-                Valgt kurs
-              </span>
-              <span className="rounded-full border border-stone-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
-                {selectedCourse?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
-              </span>
-            </div>
-
             <div className="mt-4 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
               <div>
-                <h2 className="text-3xl font-semibold text-stone-900">
-                  {selectedProduct.title}
-                </h2>
-                <p className="mt-4 text-base leading-8 text-stone-700">
-                  {selectedProduct.description}
-                </p>
-
-                <div className="mt-6 space-y-4 text-stone-700">
-                  <p>
-                    <span className="font-semibold text-stone-900">Intro:</span>{' '}
-                    {selectedCourse?.intro_text || 'Ingen intro enda'}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-stone-900">Format:</span>{' '}
-                    {selectedCourse?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
-                  </p>
-                </div>
+                <h2 className="text-3xl font-semibold text-stone-900">{selectedProduct.title}</h2>
+                <p className="mt-4 text-base leading-8 text-stone-700">{selectedProduct.description}</p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 <div className="rounded-2xl bg-stone-50 p-4">
                   <dt className="text-sm font-medium text-stone-500">Pris</dt>
-                  <dd className="mt-1 text-lg font-semibold text-stone-900">
-                    {selectedProduct.price_nok} NOK
-                  </dd>
+                  <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedProduct.price_nok} NOK</dd>
                 </div>
-                <div className="rounded-2xl bg-stone-50 p-4">
-                  <dt className="text-sm font-medium text-stone-500">Nivå</dt>
-                  <dd className="mt-1 text-lg font-semibold text-stone-900">
-                    {selectedCourse?.difficulty_level || 'Ikke satt'}
-                  </dd>
+                {selectedCourse?.has_capacity_limit && (
+                  <div className="rounded-2xl bg-stone-50 p-4">
+                    <dt className="text-sm font-medium text-stone-500">Plasser</dt>
+                    <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedCourse.capacity_limit}</dd>
+                  </div>
+                )}
+                {hasValidStartAt(selectedCourse?.start_at) && (
+                  <div className="rounded-2xl bg-stone-50 p-4">
+                    <dt className="text-sm font-medium text-stone-500">Tid</dt>
+                    <dd className="mt-1 text-lg font-semibold text-stone-900">
+                      {formatCourseDate(selectedCourse.start_at)}
+                    </dd>
+                  </div>
+                )}
+                {selectedCourse?.delivery_mode === 'physical' && selectedCourse?.location_text && (
+                  <div className="rounded-2xl bg-stone-50 p-4">
+                    <dt className="text-sm font-medium text-stone-500">Sted</dt>
+                    <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedCourse.location_text}</dd>
+                  </div>
+                )}
+
+                <div className="overflow-hidden rounded-[1.5rem] bg-stone-100 lg:mt-2 lg:w-full lg:max-w-[240px] lg:justify-self-end">
+                  <img
+                    src={selectedProduct.cover_image_url || defaultCourseImage}
+                    alt={selectedProduct.title}
+                    className="h-44 w-full object-cover sm:h-52 lg:h-56"
+                  />
                 </div>
               </div>
             </div>
@@ -250,32 +274,29 @@ function Courses() {
                   onClick={() => handleSelectProduct(product)}
                   className={`group relative overflow-hidden rounded-[2rem] border bg-white/70 p-6 text-left shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.12)] ${isSelected ? 'border-[#6f7c63] ring-4 ring-[#6f7c63]/10' : 'border-stone-200'}`}
                 >
-                  <div className="mb-5 flex items-center justify-between gap-3">
-                    <span className="rounded-full bg-[#6f7c63]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f7c63]">
-                      Kurs
-                    </span>
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${isEnrolled ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-600'}`}>
-                      {isEnrolled ? 'Påmeldt' : 'Ledig plass'}
-                    </span>
+                  <div className="mb-5 overflow-hidden rounded-[1.5rem] bg-stone-100">
+                    <img
+                      src={product.cover_image_url || defaultCourseImage}
+                      alt={product.title}
+                      className="h-52 w-full object-cover"
+                    />
                   </div>
 
-                  <h2 className="text-2xl font-semibold text-stone-900">
-                    {product.title}
-                  </h2>
-                  <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">
-                    {product.description}
-                  </p>
+                  <div className="mb-5 flex items-center justify-end gap-3">
+                    {hasValidCapacity(course) && (
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                        Ledig plass
+                      </span>
+                    )}
+                  </div>
+
+                  <h2 className="text-2xl font-semibold text-stone-900">{product.title}</h2>
+                  <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">{product.description}</p>
 
                   <div className="mt-6 grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
                     <div className="rounded-2xl bg-stone-50 px-4 py-3">
                       <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
                       <p className="mt-1 text-base font-semibold text-stone-900">{product.price_nok} NOK</p>
-                    </div>
-                    <div className="rounded-2xl bg-stone-50 px-4 py-3">
-                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Format</p>
-                      <p className="mt-1 text-base font-semibold text-stone-900">
-                        {course?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
-                      </p>
                     </div>
                   </div>
 
@@ -293,5 +314,3 @@ function Courses() {
     </div>
   )
 }
-
-export default Courses

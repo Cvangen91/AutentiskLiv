@@ -4,6 +4,17 @@ import { supabase } from '../../lib/supabase/client'
 import { useAuth } from '../../features/auth/useAuth'
 import './MyCourseDetails.css'
 
+function formatCourseDate(value) {
+  if (!value) {
+    return 'Fast/løpende kurs'
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Ugyldig dato'
+    : date.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
 function MyCourseDetails() {
   const { courseId } = useParams()
   const { user } = useAuth()
@@ -43,9 +54,11 @@ function MyCourseDetails() {
         .from('courses')
         .select(`
           id,
-          intro_text,
-          difficulty_level,
-          is_self_paced,
+          has_capacity_limit,
+          capacity_limit,
+          delivery_mode,
+          start_at,
+          location_text,
           visibility,
           products (
             id,
@@ -107,15 +120,20 @@ function MyCourseDetails() {
       <div className="my-course__card">
         <p className="my-course__text">{product?.description}</p>
         <p className="my-course__text">
-          <strong>Intro:</strong> {courseData?.intro_text || 'Ingen intro enda'}
+          <strong>Plasser:</strong>{' '}
+          {courseData?.has_capacity_limit ? courseData?.capacity_limit : 'Ingen begrensning'}
         </p>
         <p className="my-course__text">
-          <strong>Nivå:</strong> {courseData?.difficulty_level || 'Ikke satt'}
+          <strong>Type:</strong> {courseData?.delivery_mode === 'physical' ? 'Fysisk' : 'Nettbasert'}
         </p>
         <p className="my-course__text">
-          <strong>Format:</strong>{' '}
-          {courseData?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
+          <strong>Tid:</strong> {formatCourseDate(courseData?.start_at)}
         </p>
+        {courseData?.delivery_mode === 'physical' && (
+          <p className="my-course__text">
+            <strong>Sted:</strong> {courseData?.location_text || 'Ikke satt'}
+          </p>
+        )}
       </div>
 
       <section className="my-course__content">

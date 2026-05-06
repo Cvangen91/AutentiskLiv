@@ -7,6 +7,32 @@ import { supabase } from '../../lib/supabase/client';
 import anneImage from '../../assets/images/Anne2.jpg';
 import video from '../../assets/videos/AutentiskLivLoop.mp4'
 
+function formatCourseDate(value) {
+  if (!value) return 'Fast/løpende kurs';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Ugyldig dato';
+
+  return date.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function hasValidCapacity(courseInfo) {
+  if (!courseInfo?.has_capacity_limit) {
+    return false;
+  }
+
+  const capacity = Number(courseInfo.capacity_limit);
+  return Number.isFinite(capacity) && capacity > 0;
+}
+
+function hasValidStartAt(value) {
+  if (!value) {
+    return false;
+  }
+
+  return !Number.isNaN(new Date(value).getTime());
+}
+
 export default function Home() {
   const scrollRef = useRef(null);
   const [courses, setCourses] = useState([]);
@@ -38,9 +64,11 @@ export default function Home() {
           cover_image_url,
           courses (
             id,
-            intro_text,
-            difficulty_level,
-            is_self_paced
+            has_capacity_limit,
+            capacity_limit,
+            delivery_mode,
+            start_at,
+            location_text
           )
         `)
         .eq('product_type', 'course')
@@ -60,6 +88,10 @@ export default function Home() {
 
     fetchCourses();
   }, []);
+
+  function getCourseInfo(course) {
+    return Array.isArray(course?.courses) ? course.courses[0] : course?.courses;
+  }
 
   return (
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
@@ -99,7 +131,7 @@ export default function Home() {
 
           <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
           <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
-  Din reise mot autentisitet, indre styrke og personlig vekst
+  Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
 </p>
             <div className="scroll-indicator">
               <svg width="28" height="18" viewBox="0 0 28 18">
@@ -170,23 +202,20 @@ export default function Home() {
                 </div>
               ) : (
                 courses.map((course) => {
-                  const courseInfo = course.courses?.[0]
+                  const courseInfo = getCourseInfo(course)
 
                   return (
                     <div
                       key={course.id}
                       className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
                     >
-                      <div className="h-56 bg-[linear-gradient(180deg,rgba(111,124,99,0.12),rgba(236,231,221,0.84))]" />
-
                       <div className="p-6">
-                        <div className="mb-4 flex items-center justify-between gap-3">
-                          <span className="rounded-full bg-[#6f7c63]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f7c63]">
-                            Kurs
-                          </span>
-                          <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">
-                            {courseInfo?.is_self_paced ? 'Selvstudium' : 'Med oppfølging'}
-                          </span>
+                        <div className="mb-4 flex items-center justify-end gap-3">
+                          {hasValidCapacity(courseInfo) && (
+                            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                              Ledig plass
+                            </span>
+                          )}
                         </div>
 
                         <h3 className="text-2xl font-semibold text-stone-900">
@@ -201,12 +230,27 @@ export default function Home() {
                             <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
                             <p className="mt-1 text-base font-semibold text-stone-900">{course.price_nok} NOK</p>
                           </div>
-                          <div className="rounded-2xl bg-stone-50 px-4 py-3">
-                            <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Nivå</p>
-                            <p className="mt-1 text-base font-semibold text-stone-900">
-                              {courseInfo?.difficulty_level || 'Ikke satt'}
+                        </div>
+
+                        <div className="mt-3 space-y-1 text-sm text-stone-700">
+                          {hasValidCapacity(courseInfo) && (
+                            <p>
+                              <span className="font-semibold text-stone-900">Plasser:</span>{' '}
+                              {courseInfo.capacity_limit}
                             </p>
-                          </div>
+                          )}
+                          {hasValidStartAt(courseInfo?.start_at) && (
+                            <p>
+                              <span className="font-semibold text-stone-900">Tid:</span>{' '}
+                              {formatCourseDate(courseInfo.start_at)}
+                            </p>
+                          )}
+                          {courseInfo?.delivery_mode === 'physical' && courseInfo?.location_text && (
+                            <p>
+                              <span className="font-semibold text-stone-900">Sted:</span>{' '}
+                              {courseInfo.location_text}
+                            </p>
+                          )}
                         </div>
 
                         <div className="mt-6 flex justify-end border-t border-stone-200 pt-5">
@@ -237,8 +281,10 @@ export default function Home() {
           <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="order-2 lg:order-1">
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
-                Her kan du legge inn en kort introduksjon om Anne, hva hun jobber med og hvorfor Autentisk Liv finnes.
-              </p>
+                Jeg tilbyr Authentic Livings GEO love sertifiserte fjernhealing. 1:1 healing og EME, gruppetimer og vil arrangere noen retreats i samarbeid med andre flinke aktører.               </p>
+                <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
+                  Kjenner du på stress, utmattelse, søvnvansker, tiltaksløshet, nedstemthet, usikkerhet eller andre fysiske, psykiske og emosjonelle ting som plager deg? Da kan dette være noe for deg
+                </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link

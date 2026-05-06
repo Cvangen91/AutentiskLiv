@@ -1,33 +1,41 @@
 import { Link } from 'react-router-dom'
 import anneImage from '../../assets/images/Anne1.jpg'
 
-const infoCards = [
-  { label: 'Navn', value: 'Legg inn navn' },
-  { label: 'Alder', value: 'Legg inn alder' },
-  { label: 'Bosted', value: 'Legg inn bosted' },
-  { label: 'Fagområde', value: 'Legg inn fagområde' },
-]
 
 const sections = [
   {
-    title: 'Utdannelse',
+    title: 'Min tilnærming',
     text:
-      'Skriv inn en kort oppsummering av utdannelsen din, relevante kurs og hva som har gitt deg kompetansen du bruker i dag.',
+      'Anne Myrvoll er opptatt av sammenhengen mellom kropp, sinn, energi og følelser. Hun arbeider med å støtte mennesker som ønsker mer balanse, klarhet og retning i livet sitt. Gjennom sitt arbeid legger hun vekt på autentisitet, tilstedeværelse og indre utvikling. Hennes tilnærming handler ikke om å “fikse” mennesker, men om å hjelpe dem tilbake til sin egen kraft, intuisjon og indre sannhet.',
   },
   {
-    title: 'Historie',
+    title: 'Coaching og healing',
     text:
-      'Fortell kort hvordan reisen din startet, hva som motiverte deg og hvorfor dette prosjektet betyr noe for deg.',
+      'Anne videreutdanner seg kontinuerlig innen coaching, energiarbeid og personlig utvikling. Hun er særlig opptatt av hvordan gamle mønstre, emosjonelle blokkeringer og begrensende overbevisninger påvirker menneskers liv – og hvordan man kan skape varig endring gjennom økt bevissthet og indre arbeid. Hun integrerer både intuitiv veiledning, energiarbeid og verktøy for personlig transformasjon i sitt arbeid.',
   },
   {
-    title: 'Arbeid og erfaring',
-    text:
-      'Her kan du beskrive erfaringen din, hva du har jobbet med tidligere og hvordan det har formet måten du jobber på.',
+    title: 'Authentic Living GEO',
+    text: `Anne tar utdanning gjennom Authentic Living GEO, en internasjonal healer- og coachutdanning utviklet for å støtte mennesker i dyp personlig transformasjon og energetisk healing.
+GEO-programmet fokuserer blant annet på:
+- energibevissthet og healing
+- emosjonell frigjøring
+- personlig vekst og selvutvikling
+- autentisk livsutfoldelse
+- intuitiv utvikling
+- transformasjon av begrensende mønstre
+
+Gjennom utdanningen utvikles evnen til å arbeide med energi, tilstedeværelse og bevissthet på en helhetlig måte, med mål om å hjelpe mennesker til å leve mer autentisk og i kontakt med seg selv.`,
   },
   {
-    title: 'Hva du ønsker å skape',
+    title: 'Filosofi',
     text:
-      'Legg inn en liten avslutning om hva du ønsker å bidra med, og hva folk kan forvente av deg og innholdet ditt.',
+      `Anne tror på at alle mennesker har en indre visdom og evne til selvhealing. Når vi lærer å lytte innover, skaper vi rom for transformasjon, vekst og et mer autentisk liv.
+Arbeidet hennes bygger på:
+- trygghet
+- tilstedeværelse
+- respekt
+- intuisjon
+- helhetlig forståelse av mennesket`,
   },
 ]
 
@@ -45,31 +53,12 @@ function About() {
           </div>
 
           <div className="flex flex-col justify-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">
-              Om meg
-            </p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
               Litt om personen bak Autentisk Liv
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-700">
-              Her kan du introdusere deg selv kort og varmt, slik at besøkende forstår hvem du er og hva du står for med en gang.
-            </p>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {infoCards.map((card) => (
-                <div
-                  key={card.label}
-                  className="rounded-[1.5rem] border border-stone-200 bg-white/80 p-4 shadow-sm"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                    {card.label}
-                  </p>
-                  <p className="mt-2 text-base font-semibold text-stone-900">
-                    {card.value}
-                  </p>
-                </div>
-              ))}
-            </div>
+             Anne Myrvoll brenner for personlig utvikling, autentisk livsutfoldelse og helhetlig healing. Gjennom coaching, energiarbeid og spirituell utvikling ønsker hun å hjelpe mennesker til å komme nærmere seg selv, finne indre ro og leve mer i tråd med sitt ekte jeg.
+             Hun kombinerer livserfaring, intuitiv forståelse og faglig utvikling innen coaching og healing for å skape et trygt rom for transformasjon, vekst og bevisstgjøring.  </p>
           </div>
         </section>
 
@@ -82,7 +71,7 @@ function About() {
               <h2 className="text-2xl font-semibold text-stone-900">
                 {section.title}
               </h2>
-              <p className="mt-4 text-base leading-8 text-stone-700">
+              <p className="mt-4 whitespace-pre-line text-base leading-8 text-stone-700">
                 {section.text}
               </p>
             </article>

@@ -6,6 +6,65 @@ import { supabase } from '../../lib/supabase/client'
 import AdminCourseForm from '../../components/admin/AdminCourseForm'
 import AdminCourseList from '../../components/admin/AdminCourseList'
 
+function toDatetimeLocalValue(isoValue) {
+  if (!isoValue) {
+    return ''
+  }
+
+  const date = new Date(isoValue)
+
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+
+  const timezoneOffsetMs = date.getTimezoneOffset() * 60 * 1000
+  return new Date(date.getTime() - timezoneOffsetMs).toISOString().slice(0, 16)
+}
+
+function toIsoString(datetimeLocalValue) {
+  if (!datetimeLocalValue) {
+    return null
+  }
+
+  const date = new Date(datetimeLocalValue)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
+function createSlug(value) {
+  const base = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  return base || `course-${Date.now()}`
+}
+
+async function uploadCourseImage(file, productId) {
+  if (!file) {
+    return null
+  }
+
+  const fileExtension = file.name.includes('.') ? file.name.split('.').pop() : 'jpg'
+  const filePath = `course-images/${productId}/${Date.now()}.${fileExtension}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('course-images')
+    .upload(filePath, file, {
+      upsert: true,
+      contentType: file.type,
+    })
+
+  if (uploadError) {
+    throw uploadError
+  }
+
+  const { data } = supabase.storage.from('course-images').getPublicUrl(filePath)
+  return data.publicUrl || null
+}
+
 function normalizeCourse(row) {
   const course = Array.isArray(row.courses) ? row.courses[0] : row.courses
 
@@ -18,9 +77,11 @@ function normalizeCourse(row) {
     status: row.status ?? 'draft',
     coverImageUrl: row.cover_image_url ?? '',
     courseId: course?.id ?? null,
-    introText: course?.intro_text ?? '',
-    difficultyLevel: course?.difficulty_level ?? '',
-    isSelfPaced: course?.is_self_paced ?? true,
+    hasCapacityLimit: course?.has_capacity_limit ?? false,
+    capacityLimit: course?.capacity_limit ?? '',
+    deliveryMode: course?.delivery_mode ?? 'online',
+    startAt: toDatetimeLocalValue(course?.start_at),
+    locationText: course?.location_text ?? '',
     visibility: course?.visibility ?? 'public',
   }
 }
@@ -56,9 +117,11 @@ function Admin() {
           cover_image_url,
           courses (
             id,
-            intro_text,
-            difficulty_level,
-            is_self_paced,
+            has_capacity_limit,
+            capacity_limit,
+            delivery_mode,
+            start_at,
+            location_text,
             visibility
           )
         `)
@@ -97,9 +160,11 @@ function Admin() {
         cover_image_url,
         courses (
           id,
-          intro_text,
-          difficulty_level,
-          is_self_paced,
+          has_capacity_limit,
+          capacity_limit,
+          delivery_mode,
+          start_at,
+          location_text,
           visibility
         )
       `)
@@ -123,20 +188,45 @@ function Admin() {
       return
     }
 
+    if (formValues.hasCapacityLimit && (!formValues.capacityLimit || Number(formValues.capacityLimit) < 1)) {
+      setMessage('Antall plasser må være minst 1 når plassbegrensning er aktivert.')
+      return
+    }
+
+    if (formValues.deliveryMode === 'physical' && !String(formValues.locationText || '').trim()) {
+      setMessage('Sted må fylles ut når kurset er fysisk.')
+      return
+    }
+
     setLoading(true)
 
     const payload = {
       title: formValues.title,
-      slug: formValues.slug,
+      slug: editingCourse?.slug || createSlug(formValues.title),
       description: formValues.description,
       price_nok: Number(formValues.priceNok),
       status: formValues.status,
     }
 
+    let coverImageUrl = editingCourse?.coverImageUrl || null
+
     if (editingCourse) {
+      try {
+        if (formValues.coverImageFile) {
+          coverImageUrl = await uploadCourseImage(formValues.coverImageFile, editingCourse.id)
+        }
+      } catch (uploadError) {
+        setMessage(`Feil ved opplasting av bilde: ${uploadError.message}`)
+        setLoading(false)
+        return
+      }
+
       const { error: productError } = await supabase
         .from('products')
-        .update(payload)
+        .update({
+          ...payload,
+          cover_image_url: coverImageUrl,
+        })
         .eq('id', editingCourse.id)
 
       if (productError) {
@@ -146,9 +236,12 @@ function Admin() {
       }
 
       const coursePayload = {
-        intro_text: formValues.introText,
-        difficulty_level: formValues.difficultyLevel || null,
-        is_self_paced: formValues.isSelfPaced,
+        has_capacity_limit: formValues.hasCapacityLimit,
+        capacity_limit: formValues.hasCapacityLimit ? Number(formValues.capacityLimit) : null,
+        delivery_mode: formValues.deliveryMode,
+        start_at: toIsoString(formValues.startAt),
+        location_text:
+          formValues.deliveryMode === 'physical' ? formValues.locationText || null : null,
       }
 
       if (editingCourse.courseId) {
@@ -195,13 +288,39 @@ function Admin() {
         return
       }
 
+      try {
+        if (formValues.coverImageFile) {
+          coverImageUrl = await uploadCourseImage(formValues.coverImageFile, product.id)
+        }
+      } catch (uploadError) {
+        setMessage(`Produkt lagret, men feil ved opplasting av bilde: ${uploadError.message}`)
+        setLoading(false)
+        return
+      }
+
+      if (coverImageUrl) {
+        const { error: imageUpdateError } = await supabase
+          .from('products')
+          .update({ cover_image_url: coverImageUrl })
+          .eq('id', product.id)
+
+        if (imageUpdateError) {
+          setMessage(`Produkt lagret, men feil ved lagring av bilde-URL: ${imageUpdateError.message}`)
+          setLoading(false)
+          return
+        }
+      }
+
       const { error: courseError } = await supabase
         .from('courses')
         .insert({
           product_id: product.id,
-          intro_text: formValues.introText,
-          difficulty_level: formValues.difficultyLevel || null,
-          is_self_paced: formValues.isSelfPaced,
+          has_capacity_limit: formValues.hasCapacityLimit,
+          capacity_limit: formValues.hasCapacityLimit ? Number(formValues.capacityLimit) : null,
+          delivery_mode: formValues.deliveryMode,
+          start_at: toIsoString(formValues.startAt),
+          location_text:
+            formValues.deliveryMode === 'physical' ? formValues.locationText || null : null,
         })
 
       if (courseError) {

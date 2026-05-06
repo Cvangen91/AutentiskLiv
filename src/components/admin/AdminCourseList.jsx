@@ -1,4 +1,17 @@
+import defaultCourseImage from '../../constants/defaultCourseImage'
+
 function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish }) {
+  function formatStartAt(value) {
+    if (!value) {
+      return 'Fast/løpende kurs'
+    }
+
+    const date = new Date(value)
+    return Number.isNaN(date.getTime())
+      ? 'Ugyldig dato'
+      : date.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })
+  }
+
   if (loading) {
     return <p className="text-stone-700">Laster kurs...</p>
   }
@@ -21,6 +34,14 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
             key={course.id}
             className="group overflow-hidden rounded-[2rem] border border-stone-200 bg-white/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.12)]"
           >
+            <div className="mb-5 overflow-hidden rounded-[1.5rem] bg-stone-100">
+              <img
+                src={course.coverImageUrl || defaultCourseImage}
+                alt={course.title}
+                className="h-52 w-full object-cover"
+              />
+            </div>
+
             <div className="mb-5 flex items-center justify-between gap-3">
               <span className="rounded-full bg-[#6f7c63]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f7c63]">
                 Kurs
@@ -43,11 +64,27 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
                 <p className="mt-1 text-base font-semibold text-stone-900">{course.priceNok} NOK</p>
               </div>
               <div className="rounded-2xl bg-stone-50 px-4 py-3">
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Format</p>
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Type</p>
                 <p className="mt-1 text-base font-semibold text-stone-900">
-                  {course.isSelfPaced ? 'Selvstudium' : 'Med oppfølging'}
+                  {course.deliveryMode === 'physical' ? 'Fysisk' : 'Nettbasert'}
                 </p>
               </div>
+            </div>
+
+            <div className="mt-3 space-y-1 text-sm text-stone-700">
+              <p>
+                <span className="font-semibold text-stone-900">Plasser:</span>{' '}
+                {course.hasCapacityLimit ? course.capacityLimit : 'Ingen begrensning'}
+              </p>
+              <p>
+                <span className="font-semibold text-stone-900">Tid:</span> {formatStartAt(course.startAt)}
+              </p>
+              {course.deliveryMode === 'physical' && (
+                <p>
+                  <span className="font-semibold text-stone-900">Sted:</span>{' '}
+                  {course.locationText || 'Ikke satt'}
+                </p>
+              )}
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3 border-t border-stone-200 pt-5">
