@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase/client'
 import { useAuth } from '../../features/auth/useAuth'
@@ -11,6 +11,21 @@ function formatCourseDate(value) {
   if (Number.isNaN(date.getTime())) return 'Ugyldig dato'
 
   return date.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function formatTimeSlotRange(startValue, endValue) {
+  if (!startValue || !endValue) {
+    return 'Ukjent tid'
+  }
+
+  const start = new Date(startValue)
+  const end = new Date(endValue)
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return 'Ugyldig tid'
+  }
+
+  return `${start.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })} - ${end.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`
 }
 
 function hasValidCapacity(courseInfo) {
@@ -34,11 +49,17 @@ function hasValidStartAt(value) {
 export default function Courses() {
   const [courses, setCourses] = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([])
+  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState('')
+  const [timeSlotsLoading, setTimeSlotsLoading] = useState(false)
+  const [timeSlotsError, setTimeSlotsError] = useState('')
+  const [nextAvailableTimeSlot, setNextAvailableTimeSlot] = useState(null)
   const [myEnrollmentCourseIds, setMyEnrollmentCourseIds] = useState([])
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const { user } = useAuth()
   const navigate = useNavigate()
+  const selectedSectionRef = useRef(null)
 
   useEffect(() => {
     async function fetchCoursesAndEnrollments() {
@@ -98,6 +119,80 @@ export default function Courses() {
     fetchCoursesAndEnrollments()
   }, [user])
 
+  useEffect(() => {
+    let isActive = true
+
+    async function fetchNextSlot() {
+      const { data, error } = await supabase
+        .from('time_slots')
+        .select('id, start_time, end_time, notes')
+        .eq('status', 'available')
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+
+      if (!isActive) return
+
+      if (error) {
+        setNextAvailableTimeSlot(null)
+        return
+      }
+
+      setNextAvailableTimeSlot(data || null)
+    }
+
+    fetchNextSlot()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const selectedCourse = selectedProduct?.courses
+
+    if (!selectedCourse || selectedCourse.delivery_mode !== 'one_to_one') {
+      setAvailableTimeSlots([])
+      setSelectedTimeSlotId('')
+      setTimeSlotsError('')
+      setTimeSlotsLoading(false)
+      return
+    }
+
+    let isActive = true
+
+    async function fetchTimeSlots() {
+      setTimeSlotsLoading(true)
+      setTimeSlotsError('')
+
+      const { data, error } = await supabase
+        .from('time_slots')
+        .select('id, start_time, end_time, notes')
+        .eq('status', 'available')
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true })
+
+      if (!isActive) {
+        return
+      }
+
+      if (error) {
+        setTimeSlotsError(error.message)
+        setAvailableTimeSlots([])
+      } else {
+        setAvailableTimeSlots(data || [])
+      }
+
+      setTimeSlotsLoading(false)
+    }
+
+    fetchTimeSlots()
+    return () => {
+      isActive = false
+    }
+  }, [selectedProduct])
+
   async function handleEnrollClick(product) {
     if (!user) {
       navigate('/login')
@@ -146,11 +241,22 @@ export default function Courses() {
   function handleSelectProduct(product) {
     if (selectedProduct?.id === product.id) {
       setSelectedProduct(null)
+      setSelectedTimeSlotId('')
       return
     }
 
     setSelectedProduct(product)
   }
+
+  useEffect(() => {
+    if (!selectedProduct) return
+
+    const id = setTimeout(() => {
+      selectedSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+
+    return () => clearTimeout(id)
+  }, [selectedProduct])
 
   if (loading) {
     return (
@@ -170,6 +276,9 @@ export default function Courses() {
 
   const selectedCourse = selectedProduct?.courses
   const selectedIsEnrolled = selectedCourse && myEnrollmentCourseIds.includes(selectedCourse.id)
+  const selectedTimeSlot = availableTimeSlots.find((slot) => slot.id === selectedTimeSlotId)
+  const canProceedToCheckout =
+    !selectedCourse || selectedCourse.delivery_mode !== 'one_to_one' || Boolean(selectedTimeSlot)
 
   return (
     <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
@@ -184,7 +293,7 @@ export default function Courses() {
         </section>
 
         {selectedProduct && (
-          <section className="mb-8 rounded-[2rem] border border-stone-200 bg-white/65 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
+          <section ref={selectedSectionRef} className="mb-8 rounded-[2rem] border border-stone-200 bg-white/65 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
             <div className="mt-4 grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
               <div>
                 <h2 className="text-3xl font-semibold text-stone-900">{selectedProduct.title}</h2>
@@ -204,7 +313,7 @@ export default function Courses() {
                 )}
                 {hasValidStartAt(selectedCourse?.start_at) && (
                   <div className="rounded-2xl bg-stone-50 p-4">
-                    <dt className="text-sm font-medium text-stone-500">Tid</dt>
+                    <dt className="text-sm font-medium text-stone-500">Oppstart</dt>
                     <dd className="mt-1 text-lg font-semibold text-stone-900">
                       {formatCourseDate(selectedCourse.start_at)}
                     </dd>
@@ -214,6 +323,47 @@ export default function Courses() {
                   <div className="rounded-2xl bg-stone-50 p-4">
                     <dt className="text-sm font-medium text-stone-500">Sted</dt>
                     <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedCourse.location_text}</dd>
+                  </div>
+                )}
+
+                {selectedCourse?.delivery_mode === 'one_to_one' && (
+                  <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 sm:col-span-2 lg:col-span-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <dt className="text-sm font-medium text-stone-500">Ledige tider</dt>
+                      {selectedTimeSlot && (
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                          Valgt
+                        </span>
+                      )}
+                    </div>
+
+                    {timeSlotsLoading ? (
+                      <p className="mt-3 text-sm text-stone-600">Laster ledige tider...</p>
+                    ) : timeSlotsError ? (
+                      <p className="mt-3 text-sm text-red-700">Kunne ikke laste ledige tider: {timeSlotsError}</p>
+                    ) : availableTimeSlots.length === 0 ? (
+                      <p className="mt-3 text-sm text-stone-600">Ingen ledige tider er registrert ennå.</p>
+                    ) : (
+                      <div className="mt-3 grid gap-3">
+                        {availableTimeSlots.map((slot) => {
+                          const isSelected = selectedTimeSlotId === slot.id
+
+                          return (
+                            <button
+                              key={slot.id}
+                              type="button"
+                              onClick={() => setSelectedTimeSlotId(slot.id)}
+                              className={`rounded-2xl border px-4 py-3 text-left transition ${isSelected ? 'border-[#6f7c63] bg-[#f2f5ee] ring-4 ring-[#6f7c63]/10' : 'border-stone-200 bg-white hover:border-[#6f7c63]/50 hover:bg-stone-50'}`}
+                            >
+                              <p className="text-sm font-semibold text-stone-900">
+                                {formatTimeSlotRange(slot.start_time, slot.end_time)}
+                              </p>
+                              {slot.notes && <p className="mt-1 text-sm text-stone-600">{slot.notes}</p>}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -238,11 +388,18 @@ export default function Courses() {
               ) : (
                 <button
                   type="button"
-                  className="rounded-2xl bg-[#6f7c63] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
-                  onClick={() => handleEnrollClick(selectedProduct)}
+                  className="rounded-2xl bg-[#6f7c63] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#617255] disabled:cursor-not-allowed disabled:bg-stone-300"
+                  onClick={() => navigate(`/checkout/${selectedProduct.id}${selectedTimeSlotId ? `?slotId=${selectedTimeSlotId}` : ''}`)}
+                  disabled={!canProceedToCheckout}
                 >
-                  Meld deg på
+                  {selectedCourse?.delivery_mode === 'one_to_one' ? 'Gå til betaling' : 'Meld deg på'}
                 </button>
+              )}
+
+              {selectedCourse?.delivery_mode === 'one_to_one' && !canProceedToCheckout && (
+                <p className="flex items-center text-sm text-stone-600">
+                  Velg en ledig tid før du går videre til betaling.
+                </p>
               )}
 
               <button
@@ -282,25 +439,45 @@ export default function Courses() {
                     />
                   </div>
 
-                  <div className="mb-5 flex items-center justify-end gap-3">
-                    {hasValidCapacity(course) && (
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                        Ledig plass
-                      </span>
-                    )}
-                  </div>
+                  {/* badge moved to footer */}
 
                   <h2 className="text-2xl font-semibold text-stone-900">{product.title}</h2>
                   <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">{product.description}</p>
 
-                  <div className="mt-6 grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-stone-50 px-4 py-3">
-                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
-                      <p className="mt-1 text-base font-semibold text-stone-900">{product.price_nok} NOK</p>
+                  <div className="mt-6 text-sm text-stone-700">
+                    <div className="w-full">
+                      <div className="rounded-2xl bg-stone-50 px-4 py-3 w-full text-left">
+                        <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
+                        <p className="mt-1 text-base font-semibold text-stone-900">{product.price_nok} NOK</p>
+
+                        {course?.delivery_mode === 'one_to_one' ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">Neste ledige tid</p>
+                            <p className="mt-1 text-sm font-semibold text-stone-900">
+                              {nextAvailableTimeSlot ? formatTimeSlotRange(nextAvailableTimeSlot.start_time, nextAvailableTimeSlot.end_time) : 'Ingen ledige tider'}
+                            </p>
+                          </div>
+                        ) : course?.delivery_mode === 'physical' ? (
+                          <div className="mt-3">
+                            <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">Oppstart</p>
+                            <p className="mt-1 text-sm font-semibold text-stone-900">
+                              {hasValidStartAt(course.start_at) ? formatCourseDate(course.start_at) : 'Ikke satt'}
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 flex justify-end border-t border-stone-200 pt-5">
+                  <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-5">
+                    {hasValidCapacity(course) ? (
+                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                        Ledig plass
+                      </span>
+                    ) : (
+                      <div />
+                    )}
+
                     <span className="rounded-full bg-[#6f7c63] px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-[#617255]">
                       Mer info
                     </span>

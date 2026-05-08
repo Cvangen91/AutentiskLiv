@@ -161,7 +161,7 @@ function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="grid gap-2">
           <label htmlFor="deliveryMode" className="text-sm font-semibold text-stone-700">
-            Fysisk eller nettbasert
+            Type kurs
           </label>
           <select
             id="deliveryMode"
@@ -171,12 +171,13 @@ function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
           >
             <option value="online">Nettbasert</option>
             <option value="physical">Fysisk</option>
+            <option value="one_to_one">1:1 booking</option>
           </select>
         </div>
 
         <div className="grid gap-2">
           <label htmlFor="startAt" className="text-sm font-semibold text-stone-700">
-            Tid (dato og klokkeslett)
+            Oppstart (dato og klokkeslett)
           </label>
           <input
             id="startAt"

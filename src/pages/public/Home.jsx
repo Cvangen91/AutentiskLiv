@@ -16,6 +16,14 @@ function formatCourseDate(value) {
   return date.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
+function formatTimeSlotRange(startValue, endValue) {
+  if (!startValue || !endValue) return 'Ukjent tid'
+  const start = new Date(startValue)
+  const end = new Date(endValue)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 'Ugyldig tid'
+  return `${start.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })} - ${end.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`
+}
+
 function hasValidCapacity(courseInfo) {
   if (!courseInfo?.has_capacity_limit) {
     return false;
@@ -38,6 +46,7 @@ export default function Home() {
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [coursesError, setCoursesError] = useState('');
+  const [nextAvailableTimeSlot, setNextAvailableTimeSlot] = useState(null);
 
   const scroll = (direction) => {
     if (!scrollRef.current) return;
@@ -88,6 +97,33 @@ export default function Home() {
 
     fetchCourses();
   }, []);
+
+  useEffect(() => {
+    let isActive = true
+    async function fetchNextSlot() {
+      const { data, error } = await supabase
+        .from('time_slots')
+        .select('id, start_time, end_time, notes')
+        .eq('status', 'available')
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+
+      if (!isActive) return
+
+      if (error) {
+        setNextAvailableTimeSlot(null)
+        return
+      }
+
+      setNextAvailableTimeSlot(data || null)
+    }
+
+    fetchNextSlot()
+
+    return () => { isActive = false }
+  }, [])
 
   function getCourseInfo(course) {
     return Array.isArray(course?.courses) ? course.courses[0] : course?.courses;
@@ -157,123 +193,130 @@ export default function Home() {
           </h2>
 
           <div className="relative mx-auto max-w-7xl px-4">
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-stone-200/70 bg-white/80 p-3 shadow-md backdrop-blur"
-            >
-              <ChevronLeft />
-            </button>
-
-            <div
-              ref={scrollRef}
-              className="flex w-full gap-6 overflow-x-auto scroll-smooth px-10"
-              style={{ scrollbarWidth: 'none' }}
-            >
-              {loadingCourses ? (
-                Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
-                  >
-                    <div className="h-56 bg-stone-300/80" />
-
-                    <div className="p-6">
-                      <div className="mb-4 h-8 w-2/3 rounded-full bg-stone-300/80" />
-                      <div className="mb-3 h-5 w-full rounded-full bg-stone-200" />
-                      <div className="mb-3 h-5 w-5/6 rounded-full bg-stone-200" />
-                      <div className="mb-6 h-5 w-4/6 rounded-full bg-stone-200" />
-
-                      <button
-                        disabled
-                        className="w-full cursor-not-allowed rounded-2xl bg-stone-300 py-3 font-semibold text-stone-600"
-                      >
-                        Laster kurs...
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : coursesError ? (
-                <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
-                  Feil ved lasting av kurs: {coursesError}
-                </div>
-              ) : courses.length === 0 ? (
-                <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
-                  Kurs kommer snart
-                </div>
-              ) : (
-                courses.map((course) => {
-                  const courseInfo = getCourseInfo(course)
-
-                  return (
-                    <div
-                      key={course.id}
-                      className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
-                    >
-                      <div className="p-6">
-                        <div className="mb-4 flex items-center justify-end gap-3">
-                          {hasValidCapacity(courseInfo) && (
-                            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                              Ledig plass
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="text-2xl font-semibold text-stone-900">
-                          {course.title}
-                        </h3>
-                        <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">
-                          {course.description}
-                        </p>
-
-                        <div className="mt-6 grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
-                          <div className="rounded-2xl bg-stone-50 px-4 py-3">
-                            <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
-                            <p className="mt-1 text-base font-semibold text-stone-900">{course.price_nok} NOK</p>
-                          </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1 text-sm text-stone-700">
-                          {hasValidCapacity(courseInfo) && (
-                            <p>
-                              <span className="font-semibold text-stone-900">Plasser:</span>{' '}
-                              {courseInfo.capacity_limit}
-                            </p>
-                          )}
-                          {hasValidStartAt(courseInfo?.start_at) && (
-                            <p>
-                              <span className="font-semibold text-stone-900">Tid:</span>{' '}
-                              {formatCourseDate(courseInfo.start_at)}
-                            </p>
-                          )}
-                          {courseInfo?.delivery_mode === 'physical' && courseInfo?.location_text && (
-                            <p>
-                              <span className="font-semibold text-stone-900">Sted:</span>{' '}
-                              {courseInfo.location_text}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="mt-6 flex justify-end border-t border-stone-200 pt-5">
-                          <Link
-                            to="/courses"
-                            className="rounded-full bg-[#6f7c63] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#617255]"
-                          >
-                            Mer info
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })
-              )}
+            <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2">
+              <button
+                onClick={() => scroll('left')}
+                className="rounded-full border border-stone-200/70 bg-white/80 p-3 shadow-md backdrop-blur"
+              >
+                <ChevronLeft />
+              </button>
             </div>
 
-            <button
-              onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-stone-200/70 bg-white/80 p-3 shadow-md backdrop-blur"
-            >
-              <ChevronRight />
-            </button>
+            <div className="overflow-hidden">
+              <div
+                ref={scrollRef}
+                className="flex w-full gap-6 overflow-x-auto scroll-smooth px-10"
+                style={{ scrollbarWidth: 'none' }}
+              >
+                {loadingCourses ? (
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
+                    >
+                      <div className="h-56 bg-stone-300/80" />
+
+                      <div className="p-6">
+                        <div className="mb-4 h-8 w-2/3 rounded-full bg-stone-300/80" />
+                        <div className="mb-3 h-5 w-full rounded-full bg-stone-200" />
+                        <div className="mb-3 h-5 w-5/6 rounded-full bg-stone-200" />
+                        <div className="mb-6 h-5 w-4/6 rounded-full bg-stone-200" />
+
+                        <button
+                          disabled
+                          className="w-full cursor-not-allowed rounded-2xl bg-stone-300 py-3 font-semibold text-stone-600"
+                        >
+                          Laster kurs...
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : coursesError ? (
+                  <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]"> 
+                    Feil ved lasting av kurs: {coursesError}
+                  </div>
+                ) : courses.length === 0 ? (
+                  <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
+                    Kurs kommer snart
+                  </div>
+                ) : (
+                  courses.map((course) => {
+                    const courseInfo = getCourseInfo(course)
+
+                    return (
+                      <div
+                        key={course.id}
+                        className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px] text-left"
+                      >
+                        <div className="p-6 text-left">
+                          {/* badge moved to footer for visual parity with Mer info */}
+
+                          <h3 className="text-2xl font-semibold text-stone-900">
+                            {course.title}
+                          </h3>
+                          <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">
+                            {course.description}
+                          </p>
+
+                          <div className="mt-6 text-sm text-stone-700">
+                            <div className="w-full">
+                              <div className="rounded-2xl bg-stone-50 px-4 py-3 w-full text-left">
+                                <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
+                                <p className="mt-1 text-base font-semibold text-stone-900">{course.price_nok} NOK</p>
+
+                                {courseInfo?.delivery_mode === 'one_to_one' ? (
+                                  <div className="mt-3">
+                                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">Neste ledige tid</p>
+                                    <p className="mt-1 text-sm font-semibold text-stone-900">
+                                      {nextAvailableTimeSlot ? formatTimeSlotRange(nextAvailableTimeSlot.start_time, nextAvailableTimeSlot.end_time) : 'Ingen ledige tider'}
+                                    </p>
+                                  </div>
+                                ) : courseInfo?.delivery_mode === 'physical' ? (
+                                  <div className="mt-3">
+                                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">Oppstart</p>
+                                    <p className="mt-1 text-sm font-semibold text-stone-900">
+                                      {hasValidStartAt(courseInfo?.start_at) ? formatCourseDate(courseInfo.start_at) : 'Ikke satt'}
+                                    </p>
+                                  </div>
+                                ) : null}
+                              </div>
+
+                              {/* Details hidden on Home cards: only show price and oppstart/neste ledige tid */}
+
+                              <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-5">
+                                {hasValidCapacity(courseInfo) ? (
+                                  <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                    Ledig plass
+                                  </span>
+                                ) : (
+                                  <div />
+                                )}
+
+                                <Link
+                                  to="/courses"
+                                  className="rounded-full bg-[#6f7c63] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#617255]"
+                                >
+                                  Mer info
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            <div className="absolute right-0 top-1/2 z-10 -translate-y-1/2">
+              <button
+                onClick={() => scroll('right')}
+                className="rounded-full border border-stone-200/70 bg-white/80 p-3 shadow-md backdrop-blur"
+              >
+                <ChevronRight />
+              </button>
+            </div>
           </div>
         </section>
 

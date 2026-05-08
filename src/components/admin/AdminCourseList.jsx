@@ -1,6 +1,18 @@
 import defaultCourseImage from '../../constants/defaultCourseImage'
 
 function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish }) {
+  function formatDeliveryMode(value) {
+    if (value === 'physical') {
+      return 'Fysisk'
+    }
+
+    if (value === 'one_to_one') {
+      return '1:1 booking'
+    }
+
+    return 'Nettbasert'
+  }
+
   function formatStartAt(value) {
     if (!value) {
       return 'Fast/løpende kurs'
@@ -66,7 +78,7 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
               <div className="rounded-2xl bg-stone-50 px-4 py-3">
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Type</p>
                 <p className="mt-1 text-base font-semibold text-stone-900">
-                  {course.deliveryMode === 'physical' ? 'Fysisk' : 'Nettbasert'}
+                  {formatDeliveryMode(course.deliveryMode)}
                 </p>
               </div>
             </div>
@@ -77,7 +89,7 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
                 {course.hasCapacityLimit ? course.capacityLimit : 'Ingen begrensning'}
               </p>
               <p>
-                <span className="font-semibold text-stone-900">Tid:</span> {formatStartAt(course.startAt)}
+                <span className="font-semibold text-stone-900">Oppstart:</span> {formatStartAt(course.startAt)}
               </p>
               {course.deliveryMode === 'physical' && (
                 <p>
