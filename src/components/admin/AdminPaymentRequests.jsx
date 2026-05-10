@@ -11,7 +11,7 @@ export default function AdminPaymentRequests() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filter, setFilter] = useState('pending')
+  const [filter, setFilter] = useState('all')
   const [expandedId, setExpandedId] = useState(null)
 
   useEffect(() => {
@@ -56,11 +56,23 @@ export default function AdminPaymentRequests() {
 
     const { data, error: fetchError } = await query
 
+    console.log('DEBUG AdminPaymentRequests fetch:', { filter, data, fetchError })
+
     if (fetchError) {
       setError(fetchError.message)
       setRequests([])
     } else {
       setRequests(data || [])
+    }
+
+    // If no data was returned, try a simple select to see if joins are causing the issue
+    if ((!data || (Array.isArray(data) && data.length === 0)) && !fetchError) {
+      const { data: simpleData, error: simpleError } = await supabase.from('payment_requests').select('*').order('created_at', { ascending: false })
+      console.log('DEBUG AdminPaymentRequests fallback simple fetch:', { simpleData, simpleError })
+      if (!simpleError) {
+        // expose simpleData in requestsDebug for UI debugging (not used elsewhere)
+        setRequests(simpleData || [])
+      }
     }
 
     setLoading(false)
@@ -91,7 +103,7 @@ export default function AdminPaymentRequests() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
-        {['pending', 'sent_to_anne', 'approved', 'paid', 'all'].map((status) => (
+        {['all', 'pending', 'sent_to_anne', 'paid'].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status)}
@@ -102,8 +114,7 @@ export default function AdminPaymentRequests() {
             }`}
           >
             {status === 'pending' && 'Venter'}
-            {status === 'sent_to_anne' && 'Sendt til Anne'}
-            {status === 'approved' && 'Godkjent'}
+            {status === 'sent_to_anne' && 'Faktura sendt'}
             {status === 'paid' && 'Betalt'}
             {status === 'all' && 'Alle'}
           </button>
@@ -111,8 +122,13 @@ export default function AdminPaymentRequests() {
       </div>
 
       {requests.length === 0 ? (
-        <div className="rounded-lg bg-stone-50 p-6 text-center text-stone-600">
-          Ingen betalingsforespørsler
+        <div>
+          <div className="rounded-lg bg-stone-50 p-6 text-center text-stone-600">Ingen betalingsforespørsler</div>
+          <div className="mt-4 rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-700">
+            <strong>DEBUG:</strong>
+            <p className="mt-2">Filter: {filter}</p>
+            <pre className="mt-2 max-h-48 overflow-auto">{JSON.stringify({ requests, filter }, null, 2)}</pre>
+          </div>
         </div>
       ) : (
         <div className="space-y-3 overflow-x-auto">
@@ -133,12 +149,10 @@ export default function AdminPaymentRequests() {
                     <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
                       req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       req.status === 'sent_to_anne' ? 'bg-blue-100 text-blue-800' :
-                      req.status === 'approved' ? 'bg-green-100 text-green-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {req.status === 'pending' && 'Venter'}
-                      {req.status === 'sent_to_anne' && 'Sendt'}
-                      {req.status === 'approved' && 'Godkjent'}
+                      {req.status === 'sent_to_anne' && 'Faktura sendt'}
                       {req.status === 'paid' && 'Betalt'}
                     </span>
                     <span className="font-semibold text-stone-900">
@@ -196,16 +210,7 @@ export default function AdminPaymentRequests() {
                         onClick={() => updateStatus(req.id, 'sent_to_anne')}
                         className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
                       >
-                        Markér sendt
-                      </button>
-                    )}
-                    {req.status !== 'approved' && (
-                      <button
-                        type="button"
-                        onClick={() => updateStatus(req.id, 'approved')}
-                        className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
-                      >
-                        Godkjenn
+                        Markér faktura sendt
                       </button>
                     )}
                     {req.status !== 'paid' && (

@@ -32,7 +32,7 @@ function formatTimeSlotRange(startValue, endValue) {
 export default function Checkout() {
   const { productId } = useParams()
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const selectedTimeSlotId = new URLSearchParams(location.search).get('slotId')
 
@@ -59,8 +59,11 @@ export default function Checkout() {
   })
 
   const [submitting, setSubmitting] = useState(false)
+  const [debugProductData, setDebugProductData] = useState(null)
 
   useEffect(() => {
+    if (authLoading) return
+
     if (!user) {
       navigate('/login')
       return
@@ -78,6 +81,8 @@ export default function Checkout() {
           description,
           price_nok,
           cover_image_url,
+          product_type,
+          status,
           courses (
             id,
             has_capacity_limit,
@@ -88,8 +93,6 @@ export default function Checkout() {
           )
         `)
         .eq('id', productId)
-        .eq('product_type', 'course')
-        .eq('status', 'published')
         .single()
 
       if (productError) {
@@ -98,10 +101,26 @@ export default function Checkout() {
         return
       }
 
+      console.log('DEBUG productData:', productData)
+      console.log('DEBUG courses array:', productData?.courses)
+
+      // expose productData in UI when ?debug=1 is present
+      try {
+        const debugFlag = new URLSearchParams(location.search).get('debug')
+        if (debugFlag) setDebugProductData(productData)
+      } catch (e) {}
+
       setProduct(productData)
 
-      if (productData.courses && productData.courses.length > 0) {
-        const selectedCourse = productData.courses[0]
+      // Supabase may return a single object for the related `courses` when there's only one
+      const courses = productData?.courses
+        ? Array.isArray(productData.courses)
+          ? productData.courses
+          : [productData.courses]
+        : []
+
+      if (courses && courses.length > 0) {
+        const selectedCourse = courses[0]
         setCourse(selectedCourse)
 
         if (selectedCourse.delivery_mode === 'one_to_one' && !selectedTimeSlotId) {
@@ -109,6 +128,10 @@ export default function Checkout() {
           setLoading(false)
           return
         }
+      } else {
+        setErrorMessage('Kurset er ikke riktig konfigurert. Kontakt admin.')
+        setLoading(false)
+        return
       }
       setLoading(false)
     }
@@ -176,8 +199,13 @@ export default function Checkout() {
   }
 
   async function handleInvoiceSubmit() {
-    if (!product || !course) {
-      alert('Feil: Fant ikke produktinformasjon')
+    if (!product) {
+      alert('Feil: Produktinformasjon mangler')
+      return
+    }
+
+    if (!course) {
+      alert('Feil: Kursinformasjon mangler. Kontakt admin.')
       return
     }
 
@@ -248,6 +276,12 @@ export default function Checkout() {
   return (
     <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
+        {debugProductData ? (
+          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+            <strong>DEBUG productData:</strong>
+            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap">{JSON.stringify(debugProductData, null, 2)}</pre>
+          </div>
+        ) : null}
         <section className="mb-8 rounded-[2rem] border border-stone-200 bg-white/65 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
           <h1 className="text-3xl font-semibold text-stone-900">Betaling for kurs</h1>
 
