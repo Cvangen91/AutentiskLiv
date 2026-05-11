@@ -59,7 +59,6 @@ export default function Checkout() {
   })
 
   const [submitting, setSubmitting] = useState(false)
-  const [debugProductData, setDebugProductData] = useState(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -100,15 +99,6 @@ export default function Checkout() {
         setLoading(false)
         return
       }
-
-      console.log('DEBUG productData:', productData)
-      console.log('DEBUG courses array:', productData?.courses)
-
-      // expose productData in UI when ?debug=1 is present
-      try {
-        const debugFlag = new URLSearchParams(location.search).get('debug')
-        if (debugFlag) setDebugProductData(productData)
-      } catch (e) {}
 
       setProduct(productData)
 
@@ -276,12 +266,6 @@ export default function Checkout() {
   return (
     <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        {debugProductData ? (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-            <strong>DEBUG productData:</strong>
-            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap">{JSON.stringify(debugProductData, null, 2)}</pre>
-          </div>
-        ) : null}
         <section className="mb-8 rounded-[2rem] border border-stone-200 bg-white/65 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
           <h1 className="text-3xl font-semibold text-stone-900">Betaling for kurs</h1>
 
