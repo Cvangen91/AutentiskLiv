@@ -19,6 +19,8 @@ body {
   background: #ece7dd;
   color: #1f2937;
 }
+
+@import './styles/colors.css';
 /* ================= HERO LOGO ================= */
 
 .hero-logo-wrap {

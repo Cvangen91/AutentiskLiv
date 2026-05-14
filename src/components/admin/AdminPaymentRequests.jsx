@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase/client'
 
-function formatDate(isoString) {
-  if (!isoString) return '-'
-  const date = new Date(isoString)
-  return date.toLocaleString('nb-NO', { dateStyle: 'short', timeStyle: 'short' })
-}
-
 export default function AdminPaymentRequests() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
@@ -21,9 +15,9 @@ export default function AdminPaymentRequests() {
   }
 
   const statusClasses = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    invoice_sent: 'bg-blue-100 text-blue-800',
-    paid: 'bg-gray-100 text-gray-800',
+    pending: 'status-yellow',
+    invoice_sent: 'status-lavendel',
+    paid: 'status-green',
   }
 
   const fetchPaymentRequests = useCallback(async () => {
@@ -141,6 +135,36 @@ export default function AdminPaymentRequests() {
     }
   }
 
+  async function markInvoiceSent(req) {
+    const { error } = await supabase
+      .from('payment_requests')
+      .update({ status: 'invoice_sent' })
+      .eq('id', req.id)
+
+    if (error) {
+      alert(`Feil ved oppdatering: ${error.message}`)
+      return
+    }
+
+    await fetchPaymentRequests()
+  }
+
+  async function deleteRequest(reqId) {
+    if (!confirm('Slett betalingsforespørselen? Dette kan ikke angres.')) return
+
+    const { error } = await supabase
+      .from('payment_requests')
+      .delete()
+      .eq('id', reqId)
+
+    if (error) {
+      alert(`Feil ved sletting: ${error.message}`)
+      return
+    }
+
+    await fetchPaymentRequests()
+  }
+
   async function updateStatus(req, newStatus) {
     if (newStatus === 'paid') {
       await createEnrollmentForPaidRequest(req)
@@ -191,96 +215,80 @@ export default function AdminPaymentRequests() {
       {requests.length === 0 ? (
         <div className="rounded-lg bg-stone-50 p-6 text-center text-stone-600">Ingen betalingsforespørsler</div>
       ) : (
-        <div className="space-y-3 overflow-x-auto">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-stone-300 bg-stone-100">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-900">Navn</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-900">E-post</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-900">Sum</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-900">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-900">Handlinger</th>
+              </tr>
+            </thead>
+            <tbody>
           {requests.map((req) => (
-            <div
-              key={req.id}
-              className="rounded-lg border border-stone-200 bg-stone-50 p-4"
-            >
-              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-stone-900">{req.billing_name}</h4>
-                  <p className="text-sm text-stone-600">{req.billing_email}</p>
-                  <p className="text-sm text-stone-600">{req.billing_address_line1}</p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <span className="inline-block rounded-full bg-stone-200 px-2 py-1 text-xs font-medium text-stone-700">
-                      {req.payment_method === 'invoice' ? 'Faktura' : 'Vipps'}
-                    </span>
-                    <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${statusClasses[req.status] || 'bg-gray-100 text-gray-800'}`}>
-                      {statusLabels[req.status] || req.status}
-                    </span>
-                    <span className="font-semibold text-stone-900">
-                      {req.orders?.total_amount_nok} NOK
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setExpandedId(expandedId === req.id ? null : req.id)}
-                  className="text-sm font-medium text-[#6f7c63] hover:underline"
-                >
-                  {expandedId === req.id ? 'Lukk' : 'Detaljer'}
-                </button>
-              </div>
-
-              {expandedId === req.id && (
-                <div className="mt-4 space-y-3 border-t border-stone-200 pt-4">
-                  <div>
-                    <p className="text-sm font-medium text-stone-700">Kontaktinformasjon</p>
-                    <p className="text-sm text-stone-600">{req.billing_phone}</p>
-                    {req.billing_company && (
-                      <p className="text-sm text-stone-600">{req.billing_company}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-stone-700">Adresse</p>
-                    <p className="text-sm text-stone-600">
-                      {req.billing_address_line1}
-                      {req.billing_address_line2 && `, ${req.billing_address_line2}`}
-                    </p>
-                    <p className="text-sm text-stone-600">
-                      {req.billing_postal_code} {req.billing_city}
-                    </p>
-                  </div>
-
-                  {req.notes && (
-                    <div>
-                      <p className="text-sm font-medium text-stone-700">Notater</p>
-                      <p className="text-sm text-stone-600">{req.notes}</p>
-                    </div>
-                  )}
-
-                  <div>
-                    <p className="text-sm font-medium text-stone-700">Opprettet</p>
-                    <p className="text-sm text-stone-600">{formatDate(req.created_at)}</p>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
+            <>
+              <tr
+                key={req.id}
+                onClick={() => setExpandedId(expandedId === req.id ? null : req.id)}
+                className="border-b border-stone-200 hover:bg-stone-50 cursor-pointer"
+              >
+                <td className="px-4 py-3 text-sm text-stone-900">{req.billing_name}</td>
+                <td className="px-4 py-3 text-sm text-stone-600">{req.billing_email}</td>
+                <td className="px-4 py-3 text-sm font-medium text-stone-900">{req.orders?.total_amount_nok} NOK</td>
+                <td className="px-4 py-3 text-sm">
+                  <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${statusClasses[req.status] || 'bg-gray-100 text-gray-800'}`}>
+                    {statusLabels[req.status] || req.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-sm">
+                  <div className="flex gap-2">
                     {req.status === 'pending' && (
                       <button
                         type="button"
-                        onClick={() => updateStatus(req, 'invoice_sent')}
-                        className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                        onClick={(e) => { e.stopPropagation(); markInvoiceSent(req) }}
+                        className="rounded-lg btn-lavendel px-3 py-1.5 text-xs font-medium"
                       >
-                        Markér faktura sendt
+                        Faktura sendt
                       </button>
                     )}
                     {req.status !== 'paid' && (
                       <button
                         type="button"
-                        onClick={() => updateStatus(req, 'paid')}
-                        className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
+                        onClick={(e) => { e.stopPropagation(); updateStatus(req, 'paid') }}
+                        className="rounded-lg btn-green px-3 py-1.5 text-xs font-medium"
                       >
                         Markér betalt
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); deleteRequest(req.id) }}
+                      className="rounded-lg btn-red px-3 py-1.5 text-xs font-medium"
+                    >
+                      Slett
+                    </button>
                   </div>
-                </div>
+                </td>
+              </tr>
+
+              {expandedId === req.id && (
+                <tr key={`${req.id}-details`} className="bg-white">
+                  <td colSpan={5} className="px-4 py-3 text-sm text-stone-700">
+                    <div className="space-y-1">
+                      <div><span className="font-medium">Telefon:</span> {req.billing_phone || '-'}</div>
+                      <div>
+                        <span className="font-medium">Adresse:</span> {req.billing_address_line1 || '-'}{req.billing_address_line2 ? `, ${req.billing_address_line2}` : ''} {req.billing_postal_code || ''} {req.billing_city || ''}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
               )}
-            </div>
+            </>
           ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

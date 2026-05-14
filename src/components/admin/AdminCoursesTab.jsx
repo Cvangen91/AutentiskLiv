@@ -92,7 +92,6 @@ export default function AdminCoursesTab() {
   const [coursesError, setCoursesError] = useState('')
   const [selectedCourse, setSelectedCourse] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isListOpen, setIsListOpen] = useState(false)
   const formRef = useRef(null)
 
   const [message, setMessage] = useState('')
@@ -336,7 +335,7 @@ export default function AdminCoursesTab() {
   }
 
   if (loadingCourses) {
-    return <div className="text-stone-600">Laster kurser...</div>
+    return <div className="text-stone-600">Laster inn kurs...</div>
   }
 
   return (
@@ -351,14 +350,6 @@ export default function AdminCoursesTab() {
           }}
         >
           {isFormOpen ? 'Avbryt' : '+ Nytt kurs'}
-        </button>
-
-        <button
-          type="button"
-          className="rounded-lg border border-stone-300 px-4 py-2 font-medium text-stone-700 transition hover:bg-stone-50"
-          onClick={() => setIsListOpen(!isListOpen)}
-        >
-          {isListOpen ? 'Skjul liste' : 'Se alle kurser'}
         </button>
       </div>
 
@@ -380,15 +371,13 @@ export default function AdminCoursesTab() {
         </div>
       )}
 
-      {isListOpen && (
-        <AdminCourseList
-          courses={courses}
-          onEdit={(course) => {
-            setSelectedCourse(course)
-            setIsFormOpen(true)
-          }}
-        />
-      )}
+      <AdminCourseList
+        courses={courses}
+        onEdit={(course) => {
+          setSelectedCourse(course)
+          setIsFormOpen(true)
+        }}
+      />
     </div>
   )
 }

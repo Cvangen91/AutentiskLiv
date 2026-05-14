@@ -72,6 +72,19 @@ export async function createOrderAndPaymentRequest(
     throw new Error(`Feil ved opprettelse av betalingsforespørsel: ${paymentError.message}`)
   }
 
+  // Mark time slot as booked if it was selected
+  if (selectedTimeSlot?.id) {
+    const { error: timeSlotError } = await supabase
+      .from('time_slots')
+      .update({ status: 'booked' })
+      .eq('id', selectedTimeSlot.id)
+
+    if (timeSlotError) {
+      console.error(`Advarsel: Kunne ikke oppdatere tidslot status: ${timeSlotError.message}`)
+      // Don't throw error here - the order is already created, just log the warning
+    }
+  }
+
   return {
     order,
     paymentRequest,

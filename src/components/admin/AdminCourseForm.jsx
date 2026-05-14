@@ -149,9 +149,9 @@ function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
             onChange={(event) => updateField('status', event.target.value)}
             className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
           >
-            <option value="draft">draft</option>
-            <option value="published">published</option>
-            <option value="archived">archived</option>
+            <option value="draft">Utkast</option>
+            <option value="published">Publisert</option>
+            <option value="archived">Arkivert</option>
           </select>
         </div>
       </div>

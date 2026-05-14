@@ -1,0 +1,60 @@
+/* Centralized action color variables and utility classes */
+:root {
+  --action-green-bg: #e9f3ea;
+  --action-green-text: #38533f;
+  --action-green-hover: #d6e6d1;
+
+  --action-lavendel-bg: #f4eef8;
+  --action-lavendel-text: #5b3b66;
+  --action-lavendel-hover: #eadff4;
+
+  --action-red-bg: #fdecea;
+  --action-red-text: #7a2a2a;
+  --action-red-hover: #fbd7d0;
+
+  --action-yellow-bg: #fef3c7; /* light yellow */
+  --action-yellow-text: #92400e;
+  --action-yellow-hover: #fde68a;
+}
+
+/* Action button utilities used in admin UI */
+.btn-green {
+  background: var(--action-green-bg);
+  color: var(--action-green-text);
+}
+.btn-green:hover { background: var(--action-green-hover); }
+
+.btn-lavendel {
+  background: var(--action-lavendel-bg);
+  color: var(--action-lavendel-text);
+}
+.btn-lavendel:hover { background: var(--action-lavendel-hover); }
+
+.btn-red {
+  background: var(--action-red-bg);
+  color: var(--action-red-text);
+}
+.btn-red:hover { background: var(--action-red-hover); }
+
+.btn-yellow {
+  background: var(--action-yellow-bg);
+  color: var(--action-yellow-text);
+}
+.btn-yellow:hover { background: var(--action-yellow-hover); }
+
+.status-green {
+  background: var(--action-green-bg);
+  color: var(--action-green-text);
+}
+.status-lavendel {
+  background: var(--action-lavendel-bg);
+  color: var(--action-lavendel-text);
+}
+.status-yellow {
+  background: var(--action-yellow-bg);
+  color: var(--action-yellow-text);
+}
+.status-red {
+  background: var(--action-red-bg);
+  color: var(--action-red-text);
+}
