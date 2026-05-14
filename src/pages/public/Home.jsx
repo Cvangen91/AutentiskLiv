@@ -47,6 +47,7 @@ export default function Home() {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [coursesError, setCoursesError] = useState('');
   const [nextAvailableTimeSlot, setNextAvailableTimeSlot] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   const scroll = (direction) => {
     if (!scrollRef.current) return;
@@ -97,6 +98,23 @@ export default function Home() {
 
     fetchCourses();
   }, []);
+
+  // Autoplay carousel (advances right every few seconds, pauses on hover/touch)
+  useEffect(() => {
+    if (!scrollRef.current) return
+
+    const id = setInterval(() => {
+      if (isPaused) return
+      if (!scrollRef.current) return
+      try {
+        scrollRef.current.scrollBy({ left: 420, behavior: 'smooth' })
+      } catch (e) {
+        // ignore
+      }
+    }, 3500)
+
+    return () => clearInterval(id)
+  }, [isPaused, courses.length])
 
   useEffect(() => {
     let isActive = true
@@ -187,6 +205,44 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
       </section>
 
+        <section className="bg-[#ece7dd] px-6 py-24">
+          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+            <div className="order-2 lg:order-1">
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
+                Jeg tilbyr Authentic Livings GEO love sertifiserte fjernhealing. 1:1 healing og EME, gruppetimer og vil arrangere noen retreats i samarbeid med andre flinke aktører.
+              </p>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
+                Kjenner du på stress, utmattelse, søvnvansker, tiltaksløshet, nedstemthet, usikkerhet eller andre fysiske, psykiske og emosjonelle ting som plager deg? Da kan dette være noe for deg
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/about"
+                  className="inline-flex items-center justify-center rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+                >
+                  Les mer om meg
+                </Link>
+                <Link
+                  to="/courses"
+                  className="inline-flex items-center justify-center rounded-2xl border border-stone-200 px-5 py-3.5 font-semibold text-stone-700 transition hover:bg-stone-50"
+                >
+                  Se kursene
+                </Link>
+              </div>
+            </div>
+
+            <div className="order-1 flex justify-center lg:order-2">
+              <div className="w-full max-w-sm overflow-hidden rounded-[2rem] border border-stone-200 bg-stone-50 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+                <img
+                  src={anneImage}
+                  alt="Anne"
+                  className="aspect-[4/5] h-full w-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="courses" className="bg-[#ece7dd] py-24">
           <h2 className="mb-14 text-center text-4xl font-semibold md:text-5xl">
             Våre Kurs
@@ -205,6 +261,10 @@ export default function Home() {
             <div className="overflow-hidden">
               <div
                 ref={scrollRef}
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+                onTouchStart={() => setIsPaused(true)}
+                onTouchEnd={() => setIsPaused(false)}
                 className="flex w-full gap-6 overflow-x-auto scroll-smooth px-10"
                 style={{ scrollbarWidth: 'none' }}
               >
@@ -320,42 +380,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="bg-[#ece7dd] px-6 py-24">
-          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
-            <div className="order-2 lg:order-1">
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
-                Jeg tilbyr Authentic Livings GEO love sertifiserte fjernhealing. 1:1 healing og EME, gruppetimer og vil arrangere noen retreats i samarbeid med andre flinke aktører.               </p>
-                <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
-                  Kjenner du på stress, utmattelse, søvnvansker, tiltaksløshet, nedstemthet, usikkerhet eller andre fysiske, psykiske og emosjonelle ting som plager deg? Da kan dette være noe for deg
-                </p>
-
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/about"
-                  className="inline-flex items-center justify-center rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
-                >
-                  Les mer om meg
-                </Link>
-                <Link
-                  to="/courses"
-                  className="inline-flex items-center justify-center rounded-2xl border border-stone-200 px-5 py-3.5 font-semibold text-stone-700 transition hover:bg-stone-50"
-                >
-                  Se kursene
-                </Link>
-              </div>
-            </div>
-
-            <div className="order-1 flex justify-center lg:order-2">
-              <div className="w-full max-w-sm overflow-hidden rounded-[2rem] border border-stone-200 bg-stone-50 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
-                <img
-                  src={anneImage}
-                  alt="Anne"
-                  className="aspect-[4/5] h-full w-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
+        
       </main>
     </div>
   );
