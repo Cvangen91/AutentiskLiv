@@ -124,7 +124,12 @@ function MyCourseDetails() {
           {courseData?.has_capacity_limit ? courseData?.capacity_limit : 'Ingen begrensning'}
         </p>
         <p className="my-course__text">
-          <strong>Type:</strong> {courseData?.delivery_mode === 'physical' ? 'Fysisk' : 'Nettbasert'}
+          <strong>Type:</strong>{' '}
+          {courseData?.delivery_mode === 'one_to_one'
+            ? '1:1'
+            : courseData?.delivery_mode === 'physical'
+              ? 'Fysisk'
+              : 'Nettbasert'}
         </p>
         <p className="my-course__text">
           <strong>Tid:</strong> {formatCourseDate(courseData?.start_at)}

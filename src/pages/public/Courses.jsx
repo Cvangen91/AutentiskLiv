@@ -276,9 +276,11 @@ export default function Courses() {
 
   const selectedCourse = selectedProduct?.courses
   const selectedIsEnrolled = selectedCourse && myEnrollmentCourseIds.includes(selectedCourse.id)
+  const selectedIsOneToOne = selectedCourse?.delivery_mode === 'one_to_one'
+  const showAlreadyEnrolledState = selectedIsEnrolled && !selectedIsOneToOne
   const selectedTimeSlot = availableTimeSlots.find((slot) => slot.id === selectedTimeSlotId)
   const canProceedToCheckout =
-    !selectedCourse || selectedCourse.delivery_mode !== 'one_to_one' || Boolean(selectedTimeSlot)
+    !selectedCourse || !selectedIsOneToOne || Boolean(selectedTimeSlot)
 
   return (
     <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
@@ -378,7 +380,7 @@ export default function Courses() {
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {selectedIsEnrolled ? (
+              {showAlreadyEnrolledState ? (
                 <button
                   type="button"
                   className="rounded-2xl bg-stone-200 px-5 py-3 font-semibold text-stone-600"
@@ -396,7 +398,7 @@ export default function Courses() {
                 </button>
               )}
 
-              {selectedCourse?.delivery_mode === 'one_to_one' && !canProceedToCheckout && (
+              {selectedIsOneToOne && !canProceedToCheckout && (
                 <p className="flex items-center text-sm text-stone-600">
                   Velg en ledig tid før du går videre til betaling.
                 </p>
@@ -422,7 +424,6 @@ export default function Courses() {
             {courses.map((product) => {
               const course = product.courses
               const isSelected = selectedProduct?.id === product.id
-              const isEnrolled = course && myEnrollmentCourseIds.includes(course.id)
 
               return (
                 <button
