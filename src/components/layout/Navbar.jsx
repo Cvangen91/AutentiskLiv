@@ -77,6 +77,9 @@ function Navbar() {
           <Link to="/about" className={navLinkClass}>
             Om meg
           </Link>
+          <Link to="/contact" className={navLinkClass}>
+            Ta kontakt
+          </Link>
 
           {user && (
             <Link to="/profile" className={navLinkClass}>

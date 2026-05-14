@@ -6,6 +6,7 @@ import AdminLayout from '../layouts/AdminLayout'
 
 import Home from '../../pages/public/Home'
 import About from '../../pages/public/About'
+import Contact from '../../pages/public/Contact'
 import Login from '../../pages/public/Login'
 import Register from '../../pages/public/Register'
 import Courses from '../../pages/public/Courses'
@@ -23,6 +24,7 @@ function AppRoutes() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/checkout/:productId" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
