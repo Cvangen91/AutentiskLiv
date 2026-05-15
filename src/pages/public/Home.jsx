@@ -312,8 +312,9 @@ export default function Home() {
 
           <div className="relative mx-auto max-w-7xl px-4">
             <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2">
-              <button
-                onClick={() => scroll('left')}
+            <button
+  onClick={() => scroll('left')}
+  aria-label="Scroll kurs til venstre"
                 className="rounded-full border border-stone-200/70 bg-white/80 p-3 shadow-md backdrop-blur"
               >
                 <ChevronLeft />
@@ -427,8 +428,9 @@ export default function Home() {
             </div>
 
             <div className="absolute right-0 top-1/2 z-10 -translate-y-1/2">
-              <button
-                onClick={() => scroll('right')}
+            <button
+  onClick={() => scroll('right')}
+  aria-label="Scroll kurs til høyre"
                 className="rounded-full border border-stone-200/70 bg-white/80 p-3 shadow-md backdrop-blur"
               >
                 <ChevronRight />
