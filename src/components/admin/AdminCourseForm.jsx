@@ -65,23 +65,21 @@ function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-5">
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="grid gap-2">
-          <label htmlFor="title" className="text-sm font-semibold text-stone-700">
-            Tittel
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={formState.title}
-            onChange={(event) => updateField('title', event.target.value)}
-            required
-            className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-          />
-        </div>
-
-        <div className="grid gap-2">
+    <form onSubmit={handleSubmit} className="grid gap-6">
+<div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_520px] lg:items-start">        <div className="grid gap-5">
+          <div className="grid gap-2">
+            <label htmlFor="title" className="text-sm font-semibold text-stone-700">
+              Tittel
+            </label>
+            <input
+              id="title"
+              type="text"
+              value={formState.title}
+              onChange={(event) => updateField('title', event.target.value)}
+              required
+              className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+            />
+          </div>
           <label htmlFor="coverImageFile" className="text-sm font-semibold text-stone-700">
             Kursbilde
           </label>
@@ -92,36 +90,46 @@ function AdminCourseForm({ course, loading, onSubmit, onCancelEditing }) {
             onChange={(event) => updateField('coverImageFile', event.target.files?.[0] || null)}
             className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[#6f7c63] file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-[#617255] focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
           />
-          <p className="text-xs text-stone-500">Last opp et bilde som vises på kurset. PNG, JPG eller WebP fungerer best.</p>
-          {!formState.coverImageFile && (
-            <img
-              src={course?.coverImageUrl || defaultCourseImage}
-              alt={course?.coverImageUrl ? 'Nåværende kursbilde' : 'Standard kursbilde'}
-              className="mt-2 h-40 w-full rounded-2xl object-cover"
+          <p className="text-xs text-stone-500">
+            Last opp et bilde som vises på kurset. PNG, JPG eller WebP fungerer best.
+          </p>
+  
+          <div className="grid gap-2">
+            <label htmlFor="description" className="text-sm font-semibold text-stone-700">
+              Beskrivelse
+            </label>
+            <textarea
+              id="description"
+              value={formState.description}
+              onChange={(event) => updateField('description', event.target.value)}
+              rows={5}
+              className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
             />
-          )}
-          {imagePreviewUrl && (
-            <img
-              src={imagePreviewUrl}
-              alt="Forhåndsvisning av nytt kursbilde"
-              className="mt-2 h-40 w-full rounded-2xl object-cover"
-            />
-          )}
+          </div>
+  
+          {/* legg Pris/Status, Type/Oppstart, Kapasitet/Sted og knappene her */}
         </div>
-      </div>
+  
+        <div className="grid w-full max-w-[560px] justify-self-end gap-2">
+  {!formState.coverImageFile && (
+    <img
+      src={course?.coverImageUrl || defaultCourseImage}
+      alt={course?.coverImageUrl ? 'Nåværende kursbilde' : 'Standard kursbilde'}
+      className="mt-2 aspect-[4/3] w-full rounded-2xl object-cover"
+    />
+  )}
 
-      <div className="grid gap-2">
-        <label htmlFor="description" className="text-sm font-semibold text-stone-700">
-          Beskrivelse
-        </label>
-        <textarea
-          id="description"
-          value={formState.description}
-          onChange={(event) => updateField('description', event.target.value)}
-          rows={4}
-          className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-        />
+  {imagePreviewUrl && (
+    <img
+      src={imagePreviewUrl}
+      alt="Forhåndsvisning av nytt kursbilde"
+      className="mt-2 aspect-[4/3] w-full rounded-2xl object-cover"
+    />
+  )}
+</div>
       </div>
+    
+
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="grid gap-2">
