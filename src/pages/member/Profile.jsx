@@ -51,6 +51,48 @@ function Profile() {
     }
   }
 
+  async function handleCancelBooking(bookingId) {
+    if (!bookingId) return
+
+    const proceed = window.confirm('Er du sikker på at du vil avbestille denne timen?')
+    if (!proceed) return
+
+    setOneToOneLoading(true)
+    setOneToOneErrorMessage('')
+
+    try {
+      const { data: booking, error: bookingErr } = await supabase
+        .from('bookings')
+        .select('id, time_slot_id')
+        .eq('id', bookingId)
+        .maybeSingle()
+
+      if (bookingErr) throw new Error(bookingErr.message)
+
+      const { error: updateErr } = await supabase
+        .from('bookings')
+        .update({ booking_status: 'cancelled', status: 'cancelled' })
+        .eq('id', bookingId)
+
+      if (updateErr) throw new Error(updateErr.message)
+
+      if (booking?.time_slot_id) {
+        const { error: slotErr } = await supabase
+          .from('time_slots')
+          .update({ status: 'available' })
+          .eq('id', booking.time_slot_id)
+
+        if (slotErr) console.warn('Kunne ikke markere tidslot som tilgjengelig:', slotErr.message)
+      }
+
+      setOneToOneBookings((prev) => prev.filter((b) => b.id !== bookingId))
+    } catch (err) {
+      setOneToOneErrorMessage(err.message || 'Kunne ikke avbestille timen')
+    } finally {
+      setOneToOneLoading(false)
+    }
+  }
+
   useEffect(() => {
     async function fetchProfileAndCourses() {
       if (!user) return
@@ -306,6 +348,7 @@ function Profile() {
           coursesErrorMessage={coursesErrorMessage}
           oneToOneErrorMessage={oneToOneErrorMessage}
           onOpenCourse={(courseId) => navigate(`/my-courses/${courseId}`)}
+          onCancelBooking={handleCancelBooking}
         />
       </div>
     </div>

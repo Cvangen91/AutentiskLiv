@@ -107,46 +107,49 @@ function MyCourseDetails() {
 
   return (
     <div className="my-course">
-      <button
-        type="button"
-        className="my-course__back-button"
-        onClick={() => navigate('/profile')}
-      >
-        ← Tilbake til profil
-      </button>
+      <div className="my-course__inner">
+        <div className="my-course__header">
+          <div className="my-course__header-top">
+            <button
+              type="button"
+              onClick={() => navigate('/profile')}
+              className="rounded-lg bg-[#6f7c63] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+            >
+              ← Tilbake til profil
+            </button>
+          </div>
 
-      <h1 className="my-course__title">{product?.title}</h1>
+          <h1 className="my-course__title">{product?.title}</h1>
 
-      <div className="my-course__card">
-        <p className="my-course__text">{product?.description}</p>
-        <p className="my-course__text">
-          <strong>Plasser:</strong>{' '}
-          {courseData?.has_capacity_limit ? courseData?.capacity_limit : 'Ingen begrensning'}
-        </p>
-        <p className="my-course__text">
-          <strong>Type:</strong>{' '}
-          {courseData?.delivery_mode === 'one_to_one'
-            ? '1:1'
-            : courseData?.delivery_mode === 'physical'
-              ? 'Fysisk'
-              : 'Nettbasert'}
-        </p>
-        <p className="my-course__text">
-          <strong>Tid:</strong> {formatCourseDate(courseData?.start_at)}
-        </p>
+          <p className="my-course__text my-course__description">{product?.description}</p>
+        </div>
+
         {courseData?.delivery_mode === 'physical' && (
-          <p className="my-course__text">
-            <strong>Sted:</strong> {courseData?.location_text || 'Ikke satt'}
-          </p>
+          <div className="my-course__card">
+            <p className="my-course__text">
+              <strong>Plasser:</strong>{' '}
+              {courseData?.has_capacity_limit ? courseData?.capacity_limit : 'Ingen begrensning'}
+            </p>
+            <p className="my-course__text">
+              <strong>Type:</strong>{' '}
+              Fysisk
+            </p>
+            <p className="my-course__text">
+              <strong>Tid:</strong> {formatCourseDate(courseData?.start_at)}
+            </p>
+            <p className="my-course__text">
+              <strong>Sted:</strong> {courseData?.location_text || 'Ikke satt'}
+            </p>
+          </div>
         )}
-      </div>
 
-      <section className="my-course__content">
-        <h2 className="my-course__section-title">Kursinnhold</h2>
-        <p className="my-course__text">
-          Her kan dere senere vise video, bilder, tekst, moduler og leksjoner.
-        </p>
-      </section>
+        <section className="my-course__content">
+          <h2 className="my-course__section-title">Kursinnhold</h2>
+          <p className="my-course__text">
+            Her kan dere senere vise video, bilder, tekst, moduler og leksjoner.
+          </p>
+        </section>
+      </div>
     </div>
   )
 }

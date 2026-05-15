@@ -312,36 +312,9 @@ export default function Courses() {
               <div>
                 <h2 className="text-3xl font-semibold text-stone-900">{selectedProduct.title}</h2>
                 <p className="mt-4 text-base leading-8 text-stone-700">{selectedProduct.description}</p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                <div className="rounded-2xl bg-stone-50 p-4">
-                  <dt className="text-sm font-medium text-stone-500">Pris</dt>
-                  <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedProduct.price_nok} NOK</dd>
-                </div>
-                {selectedCourse?.has_capacity_limit && (
-                  <div className="rounded-2xl bg-stone-50 p-4">
-                    <dt className="text-sm font-medium text-stone-500">Plasser</dt>
-                    <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedCourse.capacity_limit}</dd>
-                  </div>
-                )}
-                {hasValidStartAt(selectedCourse?.start_at) && (
-                  <div className="rounded-2xl bg-stone-50 p-4">
-                    <dt className="text-sm font-medium text-stone-500">Oppstart</dt>
-                    <dd className="mt-1 text-lg font-semibold text-stone-900">
-                      {formatCourseDate(selectedCourse.start_at)}
-                    </dd>
-                  </div>
-                )}
-                {selectedCourse?.delivery_mode === 'physical' && selectedCourse?.location_text && (
-                  <div className="rounded-2xl bg-stone-50 p-4">
-                    <dt className="text-sm font-medium text-stone-500">Sted</dt>
-                    <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedCourse.location_text}</dd>
-                  </div>
-                )}
 
                 {selectedCourse?.delivery_mode === 'one_to_one' && (
-                  <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 sm:col-span-2 lg:col-span-1">
+                  <div className="mt-6 rounded-2xl border border-stone-200 bg-stone-50 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <dt className="text-sm font-medium text-stone-500">Ledige tider</dt>
                       {selectedTimeSlot && (
@@ -381,6 +354,59 @@ export default function Courses() {
                   </div>
                 )}
 
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  {showAlreadyEnrolledState ? (
+                    <button
+                      type="button"
+                      className="rounded-2xl bg-stone-200 px-5 py-3 font-semibold text-stone-600"
+                    >
+                      Allerede påmeldt
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="rounded-2xl bg-[#6f7c63] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#617255] disabled:cursor-not-allowed disabled:bg-stone-300"
+                      onClick={() => navigate(`/checkout/${selectedProduct.id}${selectedTimeSlotId ? `?slotId=${selectedTimeSlotId}` : ''}`)}
+                      disabled={!canProceedToCheckout}
+                    >
+                      {selectedCourse?.delivery_mode === 'one_to_one' ? 'Gå til betaling' : 'Meld deg på'}
+                    </button>
+                  )}
+
+                  {selectedIsOneToOne && !canProceedToCheckout && (
+                    <p className="flex items-center text-sm text-stone-600">
+                      Velg en ledig tid før du går videre til betaling.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="rounded-2xl bg-stone-50 p-4">
+                  <dt className="text-sm font-medium text-stone-500">Pris</dt>
+                  <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedProduct.price_nok} NOK</dd>
+                </div>
+                {selectedCourse?.has_capacity_limit && (
+                  <div className="rounded-2xl bg-stone-50 p-4">
+                    <dt className="text-sm font-medium text-stone-500">Plasser</dt>
+                    <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedCourse.capacity_limit}</dd>
+                  </div>
+                )}
+                {hasValidStartAt(selectedCourse?.start_at) && (
+                  <div className="rounded-2xl bg-stone-50 p-4">
+                    <dt className="text-sm font-medium text-stone-500">Oppstart</dt>
+                    <dd className="mt-1 text-lg font-semibold text-stone-900">
+                      {formatCourseDate(selectedCourse.start_at)}
+                    </dd>
+                  </div>
+                )}
+                {selectedCourse?.delivery_mode === 'physical' && selectedCourse?.location_text && (
+                  <div className="rounded-2xl bg-stone-50 p-4">
+                    <dt className="text-sm font-medium text-stone-500">Sted</dt>
+                    <dd className="mt-1 text-lg font-semibold text-stone-900">{selectedCourse.location_text}</dd>
+                  </div>
+                )}
+
                 <div className="overflow-hidden rounded-[1.5rem] bg-stone-100 lg:mt-2 lg:w-full lg:max-w-[240px] lg:justify-self-end">
                   <img
                     src={selectedProduct.cover_image_url || defaultCourseImage}
@@ -390,32 +416,7 @@ export default function Courses() {
                 </div>
               </div>
             </div>
-
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {showAlreadyEnrolledState ? (
-                <button
-                  type="button"
-                  className="rounded-2xl bg-stone-200 px-5 py-3 font-semibold text-stone-600"
-                >
-                  Allerede påmeldt
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="rounded-2xl bg-[#6f7c63] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#617255] disabled:cursor-not-allowed disabled:bg-stone-300"
-                  onClick={() => navigate(`/checkout/${selectedProduct.id}${selectedTimeSlotId ? `?slotId=${selectedTimeSlotId}` : ''}`)}
-                  disabled={!canProceedToCheckout}
-                >
-                  {selectedCourse?.delivery_mode === 'one_to_one' ? 'Gå til betaling' : 'Meld deg på'}
-                </button>
-              )}
-
-              {selectedIsOneToOne && !canProceedToCheckout && (
-                <p className="flex items-center text-sm text-stone-600">
-                  Velg en ledig tid før du går videre til betaling.
-                </p>
-              )}
-
               <button
                 type="button"
                 className="rounded-2xl border border-stone-200 px-5 py-3 font-semibold text-stone-700 transition hover:bg-stone-50"

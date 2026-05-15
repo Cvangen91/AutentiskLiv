@@ -1,5 +1,5 @@
 function formatCourseDate(enrollment) {
-  const course = enrollment?.products?.courses
+  const course = enrollment?.products?.courses || enrollment?.courses
   const isOneToOne = course?.delivery_mode === 'one_to_one'
 
   if (enrollment?.start_time && enrollment?.end_time) {
@@ -47,7 +47,7 @@ function formatCourseDate(enrollment) {
     : date.toLocaleString('nb-NO', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMessage, onOpenCourse }) {
+function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMessage, onOpenCourse, onCancelBooking }) {
   if (coursesLoading) {
     return <p className="mt-6 text-stone-700">Laster kurs...</p>
   }
@@ -72,13 +72,16 @@ function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMes
         </thead>
         <tbody>
           {enrollments.map((enrollment) => {
-            const product = enrollment?.products
-            const course = enrollment?.products?.courses
+            const isBooking = Boolean(enrollment?.products)
+            const product = isBooking ? enrollment.products : enrollment.courses?.products
+            const course = isBooking ? enrollment.products?.courses : enrollment.courses
             const courseId = course?.id
 
             if (!product) return null
 
-            const key = `booking-${enrollment.id}`
+            const key = isBooking ? `booking-${enrollment.id}` : `enrollment-${enrollment.id}`
+
+            const isOneToOne = course?.delivery_mode === 'one_to_one'
 
             return (
               <tr key={key} className="border-b border-stone-200 transition hover:bg-stone-50">
@@ -90,14 +93,25 @@ function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMes
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => courseId && onOpenCourse(courseId)}
-                      className="rounded-lg bg-[#6f7c63] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-                      disabled={!courseId}
-                    >
-                      Se mer
-                    </button>
+                    {isOneToOne ? (
+                      <button
+                        type="button"
+                        onClick={() => onCancelBooking && onCancelBooking(enrollment.id)}
+                        className="rounded-lg btn-red px-4 py-2 text-sm font-medium transition hover:opacity-90"
+                        disabled={!enrollment.id}
+                      >
+                        Avbestill
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => courseId && onOpenCourse(courseId)}
+                        className="rounded-lg bg-[#6f7c63] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                        disabled={!courseId}
+                      >
+                        Se mer
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -118,16 +132,21 @@ function MyCoursesSection({
   coursesErrorMessage,
   oneToOneErrorMessage,
   onOpenCourse,
+  onCancelBooking,
 }) {
-  // Combine 1:1 enrollments and pending bookings
-  const allOneToOneItems = [...oneToOneCourses, ...oneToOneBookings]
+  // Combine 1:1 enrollments and pending bookings, removing duplicates
+  // If a product_id exists in bookings, don't include it from enrollments
+  const bookingProductIds = new Set(oneToOneBookings.map((b) => b.product_id))
+  const uniqueOneToOneCourses = oneToOneCourses.filter(
+    (enrollment) => !bookingProductIds.has(enrollment.courses?.product_id)
+  )
+  const allOneToOneItems = [...uniqueOneToOneCourses, ...oneToOneBookings]
 
   return (
     <section className="mt-8 rounded-[2rem] border border-stone-200 bg-white/60 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">Kurs</p>
-          <h2 className="mt-2 text-2xl font-semibold text-stone-900">Mine kurs</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-stone-900">Dine kurs</h2>
         </div>
       </div>
 
@@ -140,7 +159,7 @@ function MyCoursesSection({
       />
 
       <div className="mt-10 border-t border-stone-200 pt-8">
-        <h3 className="text-xl font-semibold text-stone-900">Mine 1:1 timer</h3>
+        <h3 className="text-xl font-semibold text-stone-900">Dine 1:1 timer</h3>
 
         <CourseList
           enrollments={allOneToOneItems}
@@ -148,6 +167,7 @@ function MyCoursesSection({
           coursesErrorMessage={coursesErrorMessage || oneToOneErrorMessage}
           emptyMessage="Du har ingen 1:1 timer enda."
           onOpenCourse={onOpenCourse}
+          onCancelBooking={onCancelBooking}
         />
       </div>
     </section>
