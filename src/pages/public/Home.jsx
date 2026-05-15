@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase/client';
 import anneImage from '../../assets/images/Anne2.jpg';
-import video from '../../assets/videos/AutentiskLivLoop.mp4'
+import video from '../../assets/videos/AutentiskLivLoop.mp4';
 
 function formatCourseDate(value) {
   if (!value) return 'Fast/løpende kurs';
@@ -17,51 +17,55 @@ function formatCourseDate(value) {
 }
 
 function formatTimeSlotRange(startValue, endValue) {
-  if (!startValue || !endValue) return 'Ukjent tid'
-  const start = new Date(startValue)
-  const end = new Date(endValue)
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 'Ugyldig tid'
-  return `${start.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })} - ${end.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`
+  if (!startValue || !endValue) return 'Ukjent tid';
+
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 'Ugyldig tid';
+
+  return `${start.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })} - ${end.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`;
 }
 
 function hasValidCapacity(courseInfo) {
-  if (!courseInfo?.has_capacity_limit) {
-    return false;
-  }
+  if (!courseInfo?.has_capacity_limit) return false;
 
   const capacity = Number(courseInfo.capacity_limit);
   return Number.isFinite(capacity) && capacity > 0;
 }
 
 function hasValidStartAt(value) {
-  if (!value) {
-    return false;
-  }
+  if (!value) return false;
 
   return !Number.isNaN(new Date(value).getTime());
 }
 
 export default function Home() {
   const scrollRef = useRef(null);
+  const logoImagesLoaded = useRef(0);
+
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [coursesError, setCoursesError] = useState('');
   const [nextAvailableTimeSlot, setNextAvailableTimeSlot] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
   const [logoReady, setLogoReady] = useState(false);
-  const logoImagesLoaded = useRef(0);
-  
+
+  const visibleCourses = courses.length > 0 ? [...courses, ...courses] : [];
+
   function handleLogoLoaded() {
     logoImagesLoaded.current += 1;
-  
+
     if (logoImagesLoaded.current === 2) {
       setLogoReady(true);
     }
   }
+
   const scroll = (direction) => {
     if (!scrollRef.current) return;
 
     const amount = 420;
+
     scrollRef.current.scrollBy({
       left: direction === 'left' ? -amount : amount,
       behavior: 'smooth',
@@ -108,25 +112,31 @@ export default function Home() {
     fetchCourses();
   }, []);
 
-  // Autoplay carousel (advances right every few seconds, pauses on hover/touch)
   useEffect(() => {
-    if (!scrollRef.current) return
+    if (!scrollRef.current || courses.length === 0) return;
 
     const id = setInterval(() => {
-      if (isPaused) return
-      if (!scrollRef.current) return
-      try {
-        scrollRef.current.scrollBy({ left: 420, behavior: 'smooth' })
-      } catch (e) {
-        // ignore
-      }
-    }, 3500)
+      if (isPaused || !scrollRef.current) return;
 
-    return () => clearInterval(id)
-  }, [isPaused, courses.length])
+      const el = scrollRef.current;
+      const halfwayPoint = el.scrollWidth / 2;
+
+      if (el.scrollLeft >= halfwayPoint) {
+        el.scrollLeft = 0;
+      }
+
+      el.scrollBy({
+        left: 420,
+        behavior: 'smooth',
+      });
+    }, 3500);
+
+    return () => clearInterval(id);
+  }, [isPaused, courses.length]);
 
   useEffect(() => {
-    let isActive = true
+    let isActive = true;
+
     async function fetchNextSlot() {
       const { data, error } = await supabase
         .from('time_slots')
@@ -135,22 +145,24 @@ export default function Home() {
         .gte('start_time', new Date().toISOString())
         .order('start_time', { ascending: true })
         .limit(1)
-        .maybeSingle()
+        .maybeSingle();
 
-      if (!isActive) return
+      if (!isActive) return;
 
       if (error) {
-        setNextAvailableTimeSlot(null)
-        return
+        setNextAvailableTimeSlot(null);
+        return;
       }
 
-      setNextAvailableTimeSlot(data || null)
+      setNextAvailableTimeSlot(data || null);
     }
 
-    fetchNextSlot()
+    fetchNextSlot();
 
-    return () => { isActive = false }
-  }, [])
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   function getCourseInfo(course) {
     return Array.isArray(course?.courses) ? course.courses[0] : course?.courses;
@@ -159,74 +171,75 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
       <main>
-   
-      <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
-        <div className="absolute inset-0">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 h-full w-full object-cover"
-          >
-            <source src={video} type="video/mp4" />
-          </video>
+        <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
+          <div className="absolute inset-0">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              <source src={video} type="video/mp4" />
+            </video>
 
-          <div className="absolute inset-0 bg-black/15" />
-        </div>
-
-        <div className="relative z-30 min-h-screen">
-          <div className="flex min-h-screen items-center justify-center px-6">
-          <div className={`hero-logo-wrap ${logoReady ? 'hero-logo-ready' : ''}`}>
-  <div className="hero-logo-inner">
-    <img
-      src={logoMark}
-      alt="Autentisk Liv symbol"
-      className="hero-logo-mark"
-      onLoad={handleLogoLoaded}
-    />
-    <img
-      src={logoText}
-      alt="Autentisk Liv"
-      className="hero-logo-text"
-      onLoad={handleLogoLoaded}
-    />
-  </div>
-</div>
+            <div className="absolute inset-0 bg-black/15" />
           </div>
 
-          <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
-          <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
-  Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
-</p>
-<button
-  type="button"
-  onClick={() => {
-    document
-      .getElementById('about-anne')
-      ?.scrollIntoView({ behavior: 'smooth' });
-  }}
-  className="scroll-indicator mt-3 cursor-pointer transition hover:translate-y-1 focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-transparent"
-  aria-label="Scroll ned til kurs"
->
-  <svg width="28" height="18" viewBox="0 0 28 18">
-    <path
-      d="M2 2 L14 16 L26 2"
-      stroke="rgba(255,255,255,0.9)"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-  </svg>
-</button>
+          <div className="relative z-30 min-h-screen">
+            <div className="flex min-h-screen items-center justify-center px-6">
+              <div className={`hero-logo-wrap ${logoReady ? 'hero-logo-ready' : ''}`}>
+                <div className="hero-logo-inner">
+                  <img
+                    src={logoMark}
+                    alt="Autentisk Liv symbol"
+                    className="hero-logo-mark"
+                    onLoad={handleLogoLoaded}
+                  />
+                  <img
+                    src={logoText}
+                    alt="Autentisk Liv"
+                    className="hero-logo-text"
+                    onLoad={handleLogoLoaded}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
+              <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+                Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
+              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  document
+                    .getElementById('about-anne')
+                    ?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="scroll-indicator mt-3 cursor-pointer transition hover:translate-y-1 focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-transparent"
+                aria-label="Scroll ned til biografi"
+              >
+                <svg width="28" height="18" viewBox="0 0 28 18">
+                  <path
+                    d="M2 2 L14 16 L26 2"
+                    stroke="rgba(255,255,255,0.9)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
-      </section>
+          <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
+        </section>
 
-      <section id="about-anne" className="bg-[#ece7dd] px-6 py-24">          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+        <section id="about-anne" className="bg-[#ece7dd] px-6 py-24">
+          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="order-2 lg:order-1">
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
                 Jeg tilbyr Authentic Livings GEO love sertifiserte fjernhealing. 1:1 healing og EME, gruppetimer og vil arrangere noen retreats i samarbeid med andre flinke aktører.
@@ -261,27 +274,25 @@ export default function Home() {
               </div>
             </div>
           </div>
+
           <div className="mt-12 flex justify-center">
             <button
               type="button"
               onClick={() => {
                 const section = document.getElementById('courses');
 
-if (section) {
-  const yOffset = -120;
-  const y =
-    section.getBoundingClientRect().top +
-    window.pageYOffset +
-    yOffset;
+                if (section) {
+                  const yOffset = -120;
+                  const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
-  window.scrollTo({
-    top: y,
-    behavior: 'smooth',
-  });
-}
+                  window.scrollTo({
+                    top: y,
+                    behavior: 'smooth',
+                  });
+                }
               }}
               className="rounded-full p-3 text-stone-600 transition hover:translate-y-1 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400"
-              aria-label="Scroll ned til biografi"
+              aria-label="Scroll ned til kurs"
             >
               <svg width="28" height="18" viewBox="0 0 28 18">
                 <path
@@ -298,7 +309,6 @@ if (section) {
         </section>
 
         <section id="courses" className="bg-[#ece7dd] py-24">
-          
           <h2 className="mb-14 text-center text-4xl font-semibold md:text-5xl">
             Våre Kurs
           </h2>
@@ -330,7 +340,6 @@ if (section) {
                       className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
                     >
                       <div className="h-56 bg-stone-300/80" />
-
                       <div className="p-6">
                         <div className="mb-4 h-8 w-2/3 rounded-full bg-stone-300/80" />
                         <div className="mb-3 h-5 w-full rounded-full bg-stone-200" />
@@ -347,7 +356,7 @@ if (section) {
                     </div>
                   ))
                 ) : coursesError ? (
-                  <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]"> 
+                  <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
                     Feil ved lasting av kurs: {coursesError}
                   </div>
                 ) : courses.length === 0 ? (
@@ -355,17 +364,15 @@ if (section) {
                     Kurs kommer snart
                   </div>
                 ) : (
-                  courses.map((course) => {
-                    const courseInfo = getCourseInfo(course)
+                  visibleCourses.map((course, index) => {
+                    const courseInfo = getCourseInfo(course);
 
                     return (
                       <div
-                        key={course.id}
-                        className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px] text-left"
+                        key={`${course.id}-${index}`}
+                        className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 text-left shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
                       >
                         <div className="p-6 text-left">
-                          {/* badge moved to footer for visual parity with Mer info */}
-
                           <h3 className="text-2xl font-semibold text-stone-900">
                             {course.title}
                           </h3>
@@ -375,7 +382,7 @@ if (section) {
 
                           <div className="mt-6 text-sm text-stone-700">
                             <div className="w-full">
-                              <div className="rounded-2xl bg-stone-50 px-4 py-3 w-full text-left">
+                              <div className="w-full rounded-2xl bg-stone-50 px-4 py-3 text-left">
                                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
                                 <p className="mt-1 text-base font-semibold text-stone-900">{course.price_nok} NOK</p>
 
@@ -395,8 +402,6 @@ if (section) {
                                   </div>
                                 ) : null}
                               </div>
-
-                              {/* Details hidden on Home cards: only show price and oppstart/neste ledige tid */}
 
                               <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-5">
                                 {hasValidCapacity(courseInfo) ? (
@@ -418,7 +423,7 @@ if (section) {
                           </div>
                         </div>
                       </div>
-                    )
+                    );
                   })
                 )}
               </div>
@@ -434,8 +439,6 @@ if (section) {
             </div>
           </div>
         </section>
-
-        
       </main>
     </div>
   );
