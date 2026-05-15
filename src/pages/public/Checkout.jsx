@@ -130,6 +130,31 @@ export default function Checkout() {
   }, [user, productId, navigate, selectedTimeSlotId])
 
   useEffect(() => {
+    if (!user) return
+
+    async function fetchProfileData() {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, phone, address, zipcode, city')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (!profileError && profileData) {
+        setBillingData((prev) => ({
+          ...prev,
+          billing_name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || prev.billing_name,
+          billing_phone: profileData.phone || prev.billing_phone,
+          billing_address_line1: profileData.address || prev.billing_address_line1,
+          billing_postal_code: profileData.zipcode || prev.billing_postal_code,
+          billing_city: profileData.city || prev.billing_city,
+        }))
+      }
+    }
+
+    fetchProfileData()
+  }, [user])
+
+  useEffect(() => {
     if (!course || course.delivery_mode !== 'one_to_one') {
       setSelectedTimeSlot(null)
       setTimeSlotLoading(false)

@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase/client'
 import ProfileSummarySection from '../../components/member/ProfileSummarySection'
 import ProfileContactSection from '../../components/member/ProfileContactSection'
 import MyCoursesSection from '../../components/member/MyCoursesSection'
+import PendingOrdersSection from '../../components/member/PendingOrdersSection'
 
 const EMPTY_PROFILE = {
   first_name: '',
@@ -31,8 +32,23 @@ function Profile() {
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [coursesErrorMessage, setCoursesErrorMessage] = useState('')
 
+  const [pendingOrders, setPendingOrders] = useState([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+  const [ordersErrorMessage, setOrdersErrorMessage] = useState('')
+
+  const [oneToOneBookings, setOneToOneBookings] = useState([])
+  const [oneToOneLoading, setOneToOneLoading] = useState(true)
+  const [oneToOneErrorMessage, setOneToOneErrorMessage] = useState('')
+
   async function handleLogout() {
     await logout()
+  }
+
+  function handleRetryPayment(orderId) {
+    const order = pendingOrders.find((o) => o.id === orderId)
+    if (order?.order_items?.[0]?.products?.id) {
+      navigate(`/checkout/${order.order_items[0].products.id}`)
+    }
   }
 
   useEffect(() => {
@@ -41,8 +57,12 @@ function Profile() {
 
       setProfileLoading(true)
       setCoursesLoading(true)
+      setOrdersLoading(true)
+      setOneToOneLoading(true)
       setProfileErrorMessage('')
       setCoursesErrorMessage('')
+      setOrdersErrorMessage('')
+      setOneToOneErrorMessage('')
 
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -93,6 +113,79 @@ function Profile() {
       }
 
       setCoursesLoading(false)
+
+      // Hent orders med time informasjon for 1:1 bookinger
+      const { data: ordersWithDetails, error: ordersDetailsError } = await supabase
+        .from('orders')
+        .select(`
+          id,
+          order_items (
+            product_id,
+            products (
+              id,
+              title,
+              description,
+              cover_image_url,
+              courses (
+                id,
+                delivery_mode,
+                start_at
+              )
+            )
+          ),
+          payment_requests (
+            notes
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('payment_status', 'pending')
+
+      if (ordersDetailsError) {
+        setOrdersErrorMessage(ordersDetailsError.message)
+      } else {
+        setPendingOrders(ordersWithDetails || [])
+
+        // Filter for 1:1 bookings
+        const oneToOneBooks = (ordersWithDetails || []).filter((order) => {
+          const product = order.order_items?.[0]?.products
+          const course = product?.courses
+          return course?.delivery_mode === 'one_to_one'
+        })
+        setOneToOneBookings(oneToOneBooks)
+      }
+
+      setOrdersLoading(false)
+      setOneToOneLoading(false)
+
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select(`
+          id,
+          total_amount_nok,
+          payment_status,
+          order_items (
+            product_id,
+            products (
+              id,
+              title,
+              description,
+              cover_image_url
+            )
+          ),
+          payment_requests (
+            notes
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('payment_status', 'pending')
+
+      if (ordersError) {
+        setOrdersErrorMessage(ordersError.message)
+      } else {
+        setPendingOrders(ordersData || [])
+      }
+
+      setOrdersLoading(false)
     }
 
     fetchProfileAndCourses()
@@ -199,11 +292,21 @@ function Profile() {
           onProfileChange={handleProfileChange}
         />
 
+        <PendingOrdersSection
+          orders={pendingOrders}
+          loading={ordersLoading}
+          errorMessage={ordersErrorMessage}
+          onRetryPayment={handleRetryPayment}
+        />
+
         <MyCoursesSection
           regularCourses={regularCourses}
           oneToOneCourses={oneToOneCourses}
+          oneToOneBookings={oneToOneBookings}
           coursesLoading={coursesLoading}
+          oneToOneLoading={oneToOneLoading}
           coursesErrorMessage={coursesErrorMessage}
+          oneToOneErrorMessage={oneToOneErrorMessage}
           onOpenCourse={(courseId) => navigate(`/my-courses/${courseId}`)}
         />
       </div>

@@ -206,21 +206,25 @@ export default function Courses() {
       return
     }
 
-    const { data: existingEnrollment, error: checkError } = await supabase
-      .from('enrollments')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('course_id', course.id)
-      .maybeSingle()
-
-    if (checkError) {
-      alert(`Feil ved sjekk av påmelding: ${checkError.message}`)
-      return
-    }
-
-    if (existingEnrollment) {
-      alert('Du er allerede meldt på dette kurset.')
-      return
+    // For 1:1 bookings, allow multiple enrollments
+    // For regular courses, check if already enrolled
+    if (course.delivery_mode !== 'one_to_one') {
+      const { data: existingEnrollment, error: checkError } = await supabase
+        .from('enrollments')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .maybeSingle()
+    
+      if (checkError) {
+        alert(`Feil ved sjekk av påmelding: ${checkError.message}`)
+        return
+      }
+    
+      if (existingEnrollment) {
+        alert('Du er allerede meldt på dette kurset.')
+        return
+      }
     }
 
     const { error } = await supabase.from('enrollments').insert({
