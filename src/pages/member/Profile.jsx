@@ -114,44 +114,42 @@ function Profile() {
 
       setCoursesLoading(false)
 
-      // Hent orders med time informasjon for 1:1 bookinger
-      const { data: ordersWithDetails, error: ordersDetailsError } = await supabase
-        .from('orders')
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
         .select(`
           id,
-          order_items (
-            product_id,
-            products (
+          status,
+          booking_status,
+          created_at,
+          product_id,
+          start_time,
+          end_time,
+          time_slot_id,
+          products (
+            id,
+            title,
+            description,
+            cover_image_url,
+            courses (
               id,
-              title,
-              description,
-              cover_image_url,
-              courses (
-                id,
-                delivery_mode,
-                start_at
-              )
+              delivery_mode,
+              start_at
             )
           ),
-          payment_requests (
-            notes
+          time_slots (
+            id,
+            start_time,
+            end_time,
+            status
           )
         `)
         .eq('user_id', user.id)
-        .eq('payment_status', 'pending')
+        .order('created_at', { ascending: false })
 
-      if (ordersDetailsError) {
-        setOrdersErrorMessage(ordersDetailsError.message)
+      if (bookingsError) {
+        setOneToOneErrorMessage(bookingsError.message)
       } else {
-        setPendingOrders(ordersWithDetails || [])
-
-        // Filter for 1:1 bookings
-        const oneToOneBooks = (ordersWithDetails || []).filter((order) => {
-          const product = order.order_items?.[0]?.products
-          const course = product?.courses
-          return course?.delivery_mode === 'one_to_one'
-        })
-        setOneToOneBookings(oneToOneBooks)
+        setOneToOneBookings(bookingsData || [])
       }
 
       setOrdersLoading(false)
