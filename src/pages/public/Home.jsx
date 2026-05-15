@@ -49,6 +49,8 @@ export default function Home() {
   const [nextAvailableTimeSlot, setNextAvailableTimeSlot] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
 
+  const visibleCourses = courses.length > 0 ? [...courses, ...courses] : [];
+
   const scroll = (direction) => {
     if (!scrollRef.current) return;
 
@@ -99,25 +101,31 @@ export default function Home() {
     fetchCourses();
   }, []);
 
-  // Autoplay carousel (advances right every few seconds, pauses on hover/touch)
   useEffect(() => {
-    if (!scrollRef.current) return
+    if (!scrollRef.current || courses.length === 0) return;
 
     const id = setInterval(() => {
-      if (isPaused) return
-      if (!scrollRef.current) return
-      try {
-        scrollRef.current.scrollBy({ left: 420, behavior: 'smooth' })
-      } catch (e) {
-        // ignore
-      }
-    }, 3500)
+      if (isPaused || !scrollRef.current) return;
 
-    return () => clearInterval(id)
-  }, [isPaused, courses.length])
+      const el = scrollRef.current;
+      const halfwayPoint = el.scrollWidth / 2;
+
+      if (el.scrollLeft >= halfwayPoint) {
+        el.scrollLeft = 0;
+      }
+
+      el.scrollBy({
+        left: 420,
+        behavior: 'smooth',
+      });
+    }, 3500);
+
+    return () => clearInterval(id);
+  }, [isPaused, courses.length]);
 
   useEffect(() => {
-    let isActive = true
+    let isActive = true;
+
     async function fetchNextSlot() {
       const { data, error } = await supabase
         .from('time_slots')
@@ -126,22 +134,24 @@ export default function Home() {
         .gte('start_time', new Date().toISOString())
         .order('start_time', { ascending: true })
         .limit(1)
-        .maybeSingle()
+        .maybeSingle();
 
-      if (!isActive) return
+      if (!isActive) return;
 
       if (error) {
-        setNextAvailableTimeSlot(null)
-        return
+        setNextAvailableTimeSlot(null);
+        return;
       }
 
-      setNextAvailableTimeSlot(data || null)
+      setNextAvailableTimeSlot(data || null);
     }
 
-    fetchNextSlot()
+    fetchNextSlot();
 
-    return () => { isActive = false }
-  }, [])
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   function getCourseInfo(course) {
     return Array.isArray(course?.courses) ? course.courses[0] : course?.courses;
@@ -150,62 +160,62 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
       <main>
-      <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
-        <div className="absolute inset-0">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 h-full w-full object-cover"
-          >
-            <source src={video} type="video/mp4" />
-          </video>
+        <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
+          <div className="absolute inset-0">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              <source src={video} type="video/mp4" />
+            </video>
 
-          <div className="absolute inset-0 bg-black/15" />
-        </div>
+            <div className="absolute inset-0 bg-black/15" />
+          </div>
 
-        <div className="relative z-30 min-h-screen">
-          <div className="flex min-h-screen items-center justify-center px-6">
-            <div className="hero-logo-wrap">
-              <div className="hero-logo-inner">
-                <img
-                  src={logoMark}
-                  alt="Autentisk Liv symbol"
-                  className="hero-logo-mark"
-                />
-                <img
-                  src={logoText}
-                  alt="Autentisk Liv"
-                  className="hero-logo-text"
-                />
+          <div className="relative z-30 min-h-screen">
+            <div className="flex min-h-screen items-center justify-center px-6">
+              <div className="hero-logo-wrap">
+                <div className="hero-logo-inner">
+                  <img
+                    src={logoMark}
+                    alt="Autentisk Liv symbol"
+                    className="hero-logo-mark"
+                  />
+                  <img
+                    src={logoText}
+                    alt="Autentisk Liv"
+                    className="hero-logo-text"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
+              <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+                Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
+              </p>
+              <div className="scroll-indicator">
+                <svg width="28" height="18" viewBox="0 0 28 18">
+                  <path
+                    d="M2 2 L14 16 L26 2"
+                    stroke="rgba(255,255,255,0.9)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </svg>
               </div>
             </div>
           </div>
 
-          <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
-          <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
-  Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
-</p>
-            <div className="scroll-indicator">
-              <svg width="28" height="18" viewBox="0 0 28 18">
-                <path
-                  d="M2 2 L14 16 L26 2"
-                  stroke="rgba(255,255,255,0.9)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
+          <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
+        </section>
 
-        <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
-      </section>
-
-        <section className="bg-[#ece7dd] px-6 py-24">
+        <section className="bg-[#ece7dd] px-6 py-16">
           <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="order-2 lg:order-1">
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
@@ -243,11 +253,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="courses" className="bg-[#ece7dd] py-24">
-          <h2 className="mb-14 text-center text-4xl font-semibold md:text-5xl">
-            Våre Kurs
-          </h2>
-
+        <section id="courses" className="bg-[#ece7dd] py-16">
           <div className="relative mx-auto max-w-7xl px-4">
             <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2">
               <button
@@ -292,7 +298,7 @@ export default function Home() {
                     </div>
                   ))
                 ) : coursesError ? (
-                  <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]"> 
+                  <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
                     Feil ved lasting av kurs: {coursesError}
                   </div>
                 ) : courses.length === 0 ? (
@@ -300,20 +306,19 @@ export default function Home() {
                     Kurs kommer snart
                   </div>
                 ) : (
-                  courses.map((course) => {
-                    const courseInfo = getCourseInfo(course)
+                  visibleCourses.map((course, index) => {
+                    const courseInfo = getCourseInfo(course);
 
                     return (
                       <div
-                        key={course.id}
+                        key={`${course.id}-${index}`}
                         className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px] text-left"
                       >
                         <div className="p-6 text-left">
-                          {/* badge moved to footer for visual parity with Mer info */}
-
                           <h3 className="text-2xl font-semibold text-stone-900">
                             {course.title}
                           </h3>
+
                           <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">
                             {course.description}
                           </p>
@@ -321,27 +326,37 @@ export default function Home() {
                           <div className="mt-6 text-sm text-stone-700">
                             <div className="w-full">
                               <div className="rounded-2xl bg-stone-50 px-4 py-3 w-full text-left">
-                                <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
-                                <p className="mt-1 text-base font-semibold text-stone-900">{course.price_nok} NOK</p>
+                                <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
+                                  Pris
+                                </p>
+                                <p className="mt-1 text-base font-semibold text-stone-900">
+                                  {course.price_nok} NOK
+                                </p>
 
                                 {courseInfo?.delivery_mode === 'one_to_one' ? (
                                   <div className="mt-3">
-                                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">Neste ledige tid</p>
+                                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">
+                                      Neste ledige tid
+                                    </p>
                                     <p className="mt-1 text-sm font-semibold text-stone-900">
-                                      {nextAvailableTimeSlot ? formatTimeSlotRange(nextAvailableTimeSlot.start_time, nextAvailableTimeSlot.end_time) : 'Ingen ledige tider'}
+                                      {nextAvailableTimeSlot
+                                        ? formatTimeSlotRange(nextAvailableTimeSlot.start_time, nextAvailableTimeSlot.end_time)
+                                        : 'Ingen ledige tider'}
                                     </p>
                                   </div>
                                 ) : courseInfo?.delivery_mode === 'physical' ? (
                                   <div className="mt-3">
-                                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">Oppstart</p>
+                                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">
+                                      Oppstart
+                                    </p>
                                     <p className="mt-1 text-sm font-semibold text-stone-900">
-                                      {hasValidStartAt(courseInfo?.start_at) ? formatCourseDate(courseInfo.start_at) : 'Ikke satt'}
+                                      {hasValidStartAt(courseInfo?.start_at)
+                                        ? formatCourseDate(courseInfo.start_at)
+                                        : 'Ikke satt'}
                                     </p>
                                   </div>
                                 ) : null}
                               </div>
-
-                              {/* Details hidden on Home cards: only show price and oppstart/neste ledige tid */}
 
                               <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-5">
                                 {hasValidCapacity(courseInfo) ? (
@@ -363,7 +378,7 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-                    )
+                    );
                   })
                 )}
               </div>
@@ -379,8 +394,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        
       </main>
     </div>
   );
