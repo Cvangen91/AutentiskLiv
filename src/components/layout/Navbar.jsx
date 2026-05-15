@@ -75,7 +75,7 @@ function Navbar() {
             Kurs
           </Link>
           <Link to="/about" className={navLinkClass}>
-            Om meg
+            Om Anne
           </Link>
           <Link to="/contact" className={navLinkClass}>
             Ta kontakt
