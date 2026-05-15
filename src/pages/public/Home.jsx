@@ -238,7 +238,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
         </section>
 
-        <section id="about-anne" className="bg-[#ece7dd] px-6 py-24">
+        <section id="about-anne" className="bg-[#ece7dd] px-6 py-16">
           <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="order-2 lg:order-1">
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
@@ -308,10 +308,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="courses" className="bg-[#ece7dd] py-24">
-          <h2 className="mb-14 text-center text-4xl font-semibold md:text-5xl">
-            Våre Kurs
-          </h2>
+        <section id="courses" className="bg-[#ece7dd] py-16">
 
           <div className="relative mx-auto max-w-7xl px-4">
             <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2">
