@@ -24,48 +24,41 @@ body {
 /* ================= HERO LOGO ================= */
 
 .hero-logo-wrap {
-  position: relative;
   width: 720px;
   max-width: 92vw;
   height: 180px;
   margin: 0 auto;
   transform: translateY(-100px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero-logo-inner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
   width: 700px;
   max-width: 86vw;
-  height: 120px;
-  transform: translate(-50%, -50%);
 }
 
 .hero-logo-mark {
-  position: absolute;
-  left: 50%;
-  top: 50%;
   width: 92px;
   height: auto;
-  z-index: 3;
+  flex-shrink: 0;
   opacity: 0;
-  transform: translate(-50%, -50%) rotate(0deg);
+  transform: translateX(220px) rotate(0deg);
   transform-origin: center center;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.12));
   animation: logoRollOut 4.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .hero-logo-text {
-  position: absolute;
-  left: 50%;
-  top: 50%;
   width: 390px;
   max-width: 58vw;
   height: auto;
-  z-index: 2;
   opacity: 0;
-  transform: translate(-28%, -50%);
   filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.08));
   animation: logoTextReveal 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: 2.6s;
@@ -85,6 +78,7 @@ body {
   animation: subtitleFade 1s ease forwards;
   animation-delay: 3s;
 }
+
 .scroll-indicator {
   margin-top: 1rem;
   opacity: 0;
@@ -93,14 +87,12 @@ body {
   animation-delay: 3.4s, 3.4s;
 }
 
-
 /* ================= ANIMATIONS ================= */
 
 @keyframes logoRollOut {
   0% {
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(0deg);
     opacity: 0;
+    transform: translateX(220px) rotate(0deg);
   }
 
   10% {
@@ -108,31 +100,29 @@ body {
   }
 
   48% {
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(0deg);
     opacity: 1;
+    transform: translateX(220px) rotate(0deg);
   }
 
   100% {
-    left: calc(50% - 230px);
-    transform: translate(-33%, -50%) rotate(-360deg);
     opacity: 1;
+    transform: translateX(0) rotate(-360deg);
   }
 }
 
 @keyframes logoTextReveal {
   0% {
     opacity: 0;
-    transform: translate(-45%, -50%);
     clip-path: inset(0 100% 0 0);
   }
 
   100% {
     opacity: 1;
-    transform: translate(-33%, -50%);
     clip-path: inset(0 0 0 0);
   }
-}@keyframes subtitleFade {
+}
+
+@keyframes subtitleFade {
   0% {
     opacity: 0;
     transform: translateY(12px);
@@ -143,6 +133,7 @@ body {
     transform: translateY(0);
   }
 }
+
 @keyframes bounce {
   0%, 100% {
     transform: translateY(0);

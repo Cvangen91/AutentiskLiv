@@ -252,8 +252,17 @@ export default function Courses() {
     if (!selectedProduct) return
 
     const id = setTimeout(() => {
-      selectedSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 80)
+      const section = selectedSectionRef.current
+
+      if (section) {
+        const yOffset = -110
+        const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset
+      
+        window.scrollTo({
+          top: y,
+          behavior: 'smooth',
+        })
+      }    }, 80)
 
     return () => clearTimeout(id)
   }, [selectedProduct])
@@ -283,8 +292,7 @@ export default function Courses() {
     !selectedCourse || !selectedIsOneToOne || Boolean(selectedTimeSlot)
 
   return (
-    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+<div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-8 text-stone-900 sm:px-6 lg:px-16">      <div className="mx-auto max-w-7xl">
         <section className="mb-8 rounded-[1.75rem] border border-stone-200 bg-white/60 px-6 py-5 shadow-[0_16px_40px_rgba(0,0,0,0.06)] backdrop-blur-md sm:px-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">Kurs</p>
           <p className="mt-2 max-w-3xl text-base leading-7 text-stone-700">

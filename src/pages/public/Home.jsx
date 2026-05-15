@@ -48,7 +48,16 @@ export default function Home() {
   const [coursesError, setCoursesError] = useState('');
   const [nextAvailableTimeSlot, setNextAvailableTimeSlot] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
-
+  const [logoReady, setLogoReady] = useState(false);
+  const logoImagesLoaded = useRef(0);
+  
+  function handleLogoLoaded() {
+    logoImagesLoaded.current += 1;
+  
+    if (logoImagesLoaded.current === 2) {
+      setLogoReady(true);
+    }
+  }
   const scroll = (direction) => {
     if (!scrollRef.current) return;
 
@@ -150,6 +159,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
       <main>
+   
       <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
         <div className="absolute inset-0">
           <video
@@ -167,46 +177,56 @@ export default function Home() {
 
         <div className="relative z-30 min-h-screen">
           <div className="flex min-h-screen items-center justify-center px-6">
-            <div className="hero-logo-wrap">
-              <div className="hero-logo-inner">
-                <img
-                  src={logoMark}
-                  alt="Autentisk Liv symbol"
-                  className="hero-logo-mark"
-                />
-                <img
-                  src={logoText}
-                  alt="Autentisk Liv"
-                  className="hero-logo-text"
-                />
-              </div>
-            </div>
+          <div className={`hero-logo-wrap ${logoReady ? 'hero-logo-ready' : ''}`}>
+  <div className="hero-logo-inner">
+    <img
+      src={logoMark}
+      alt="Autentisk Liv symbol"
+      className="hero-logo-mark"
+      onLoad={handleLogoLoaded}
+    />
+    <img
+      src={logoText}
+      alt="Autentisk Liv"
+      className="hero-logo-text"
+      onLoad={handleLogoLoaded}
+    />
+  </div>
+</div>
           </div>
 
           <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
           <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
   Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
 </p>
-            <div className="scroll-indicator">
-              <svg width="28" height="18" viewBox="0 0 28 18">
-                <path
-                  d="M2 2 L14 16 L26 2"
-                  stroke="rgba(255,255,255,0.9)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-              </svg>
-            </div>
+<button
+  type="button"
+  onClick={() => {
+    document
+      .getElementById('about-anne')
+      ?.scrollIntoView({ behavior: 'smooth' });
+  }}
+  className="scroll-indicator mt-3 cursor-pointer transition hover:translate-y-1 focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-transparent"
+  aria-label="Scroll ned til kurs"
+>
+  <svg width="28" height="18" viewBox="0 0 28 18">
+    <path
+      d="M2 2 L14 16 L26 2"
+      stroke="rgba(255,255,255,0.9)"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  </svg>
+</button>
           </div>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
       </section>
 
-        <section className="bg-[#ece7dd] px-6 py-24">
-          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+      <section id="about-anne" className="bg-[#ece7dd] px-6 py-24">          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="order-2 lg:order-1">
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
                 Jeg tilbyr Authentic Livings GEO love sertifiserte fjernhealing. 1:1 healing og EME, gruppetimer og vil arrangere noen retreats i samarbeid med andre flinke aktører.
@@ -241,9 +261,44 @@ export default function Home() {
               </div>
             </div>
           </div>
+          <div className="mt-12 flex justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                const section = document.getElementById('courses');
+
+if (section) {
+  const yOffset = -120;
+  const y =
+    section.getBoundingClientRect().top +
+    window.pageYOffset +
+    yOffset;
+
+  window.scrollTo({
+    top: y,
+    behavior: 'smooth',
+  });
+}
+              }}
+              className="rounded-full p-3 text-stone-600 transition hover:translate-y-1 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400"
+              aria-label="Scroll ned til biografi"
+            >
+              <svg width="28" height="18" viewBox="0 0 28 18">
+                <path
+                  d="M2 2 L14 16 L26 2"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
+            </button>
+          </div>
         </section>
 
         <section id="courses" className="bg-[#ece7dd] py-24">
+          
           <h2 className="mb-14 text-center text-4xl font-semibold md:text-5xl">
             Våre Kurs
           </h2>
