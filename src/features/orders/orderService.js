@@ -72,6 +72,23 @@ export async function createOrderAndPaymentRequest(
     throw new Error(`Feil ved opprettelse av betalingsforespørsel: ${paymentError.message}`)
   }
 
+  if (selectedTimeSlot?.id) {
+    const { error: bookingError } = await supabase.from('bookings').insert({
+      product_id: productId,
+      user_id: userId,
+      booked_by: userId,
+      start_time: selectedTimeSlot.start_time,
+      end_time: selectedTimeSlot.end_time,
+      time_slot_id: selectedTimeSlot.id,
+      status: 'pending',
+      booking_status: 'pending',
+    })
+
+    if (bookingError) {
+      throw new Error(`Feil ved opprettelse av booking: ${bookingError.message}`)
+    }
+  }
+
   // Mark time slot as booked if it was selected
   if (selectedTimeSlot?.id) {
     const { error: timeSlotError } = await supabase

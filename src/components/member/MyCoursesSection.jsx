@@ -1,28 +1,37 @@
 function formatCourseDate(enrollment) {
-  const course = enrollment?.courses
+  const course = enrollment?.products?.courses
   const isOneToOne = course?.delivery_mode === 'one_to_one'
 
-  // For 1:1 bookings from orders
-  if (enrollment?.order_items) {
-    const paymentRequest = enrollment?.payment_requests?.[0]
-    if (paymentRequest?.notes) {
-      const timeMatch = paymentRequest.notes.match(/Valgt tid: (.+?)(\n|$)/)
-      if (timeMatch) {
-        return timeMatch[1]
-      }
+  if (enrollment?.start_time && enrollment?.end_time) {
+    const start = new Date(enrollment.start_time)
+    const end = new Date(enrollment.end_time)
+
+    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+      return `${start.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })} - ${end.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`
     }
-    return 'Tid ikke satt'
   }
 
-  // For 1:1 bookings from enrollments
-  if (isOneToOne) {
-    const orderData = enrollment?._orderData
-    if (orderData?.payment_requests?.[0]?.notes) {
-      const timeMatch = orderData.payment_requests[0].notes.match(/Valgt tid: (.+?)(\n|$)/)
-      if (timeMatch) {
-        return timeMatch[1]
-      }
+  const timeSlot = Array.isArray(enrollment?.time_slots)
+    ? enrollment.time_slots[0]
+    : enrollment?.time_slots
+
+  if (timeSlot?.start_time && timeSlot?.end_time) {
+    const start = new Date(timeSlot.start_time)
+    const end = new Date(timeSlot.end_time)
+
+    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+      return `${start.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })} - ${end.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`
     }
+  }
+
+  if (isOneToOne) {
+    if (timeSlot?.start_time) {
+      return new Date(timeSlot.start_time).toLocaleString('nb-NO', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+    }
+
     return 'Tid ikke satt'
   }
 
@@ -63,20 +72,13 @@ function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMes
         </thead>
         <tbody>
           {enrollments.map((enrollment) => {
-            // Handle both enrollment objects and order objects
-            const isOrder = enrollment?.order_items ? true : false
-            const product = isOrder 
-              ? enrollment.order_items?.[0]?.products 
-              : enrollment.courses?.products
-            const course = isOrder 
-              ? enrollment.order_items?.[0]?.products?.courses 
-              : enrollment.courses
+            const product = enrollment?.products
+            const course = enrollment?.products?.courses
             const courseId = course?.id
 
             if (!product) return null
 
-            // For orders, use orderId as key; for enrollments, use enrollmentId
-            const key = isOrder ? `order-${enrollment.id}` : `enrollment-${enrollment.id}`
+            const key = `booking-${enrollment.id}`
 
             return (
               <tr key={key} className="border-b border-stone-200 transition hover:bg-stone-50">
