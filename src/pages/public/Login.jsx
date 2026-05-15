@@ -61,34 +61,40 @@ function Login() {
           </p>
 
           <div className="mt-8 rounded-[2rem] border border-stone-200 bg-white/55 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
-            <form onSubmit={handleLogin} className="grid gap-5">
-              <div className="grid gap-2">
-                <label className="text-sm font-semibold text-stone-700">E-post</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                />
-              </div>
+          <form onSubmit={handleLogin} className="grid gap-5">
+  <div className="grid gap-2">
+    <label htmlFor="email" className="text-sm font-semibold text-stone-700">
+      E-post
+    </label>
+    <input
+      id="email"
+      type="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+    />
+  </div>
 
-              <div className="grid gap-2">
-                <label className="text-sm font-semibold text-stone-700">Passord</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
-                />
-              </div>
+  <div className="grid gap-2">
+    <label htmlFor="password" className="text-sm font-semibold text-stone-700">
+      Passord
+    </label>
+    <input
+      id="password"
+      type="password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+    />
+  </div>
 
-              <button
-                type="submit"
-                className="mt-1 rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
-              >
-                Logg inn
-              </button>
-            </form>
+  <button
+    type="submit"
+    className="mt-1 rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+  >
+    Logg inn
+  </button>
+</form>
 
             {message && <p className="mt-4 text-sm text-stone-700">{message}</p>}
           </div>
