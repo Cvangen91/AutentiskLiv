@@ -44,10 +44,85 @@ function Profile() {
     await logout()
   }
 
-  function handleRetryPayment(orderId) {
-    const order = pendingOrders.find((o) => o.id === orderId)
-    if (order?.order_items?.[0]?.products?.id) {
-      navigate(`/checkout/${order.order_items[0].products.id}`)
+  async function handleCancelPendingOrder(orderId) {
+    const order = pendingOrders.find((item) => item.id === orderId)
+
+    if (!order) return
+
+    const proceed = window.confirm('Er du sikker på at du vil avbestille denne bestillingen?')
+    if (!proceed) return
+
+    setOrdersLoading(true)
+    setOrdersErrorMessage('')
+
+    try {
+      const productId = order.order_items?.[0]?.product_id || order.order_items?.[0]?.products?.id || null
+
+      if (productId) {
+        const { data: bookingRows, error: bookingError } = await supabase
+          .from('bookings')
+          .select('id, time_slot_id, created_at, booking_status, status')
+          .eq('user_id', user.id)
+          .eq('product_id', productId)
+          .neq('booking_status', 'cancelled')
+          .order('created_at', { ascending: true })
+
+        if (bookingError) throw new Error(bookingError.message)
+
+        const orderTime = new Date(order.created_at || Date.now()).getTime()
+        const booking = (bookingRows || []).slice().sort((a, b) => {
+          const aTime = new Date(a.created_at || 0).getTime()
+          const bTime = new Date(b.created_at || 0).getTime()
+          return Math.abs(aTime - orderTime) - Math.abs(bTime - orderTime)
+        })[0] || null
+
+        if (booking?.id) {
+          const { error: bookingUpdateError } = await supabase
+            .from('bookings')
+            .update({ booking_status: 'cancelled', status: 'cancelled' })
+            .eq('id', booking.id)
+
+          if (bookingUpdateError) throw new Error(bookingUpdateError.message)
+
+          if (booking.time_slot_id) {
+            const { error: slotError } = await supabase
+              .from('time_slots')
+              .update({ status: 'available' })
+              .eq('id', booking.time_slot_id)
+
+            if (slotError) throw new Error(slotError.message)
+          }
+
+          setOneToOneBookings((prev) => prev.filter((b) => b.id !== booking.id))
+        }
+      }
+
+      const { error: paymentRequestError } = await supabase
+        .from('payment_requests')
+        .delete()
+        .eq('order_id', orderId)
+
+      if (paymentRequestError) throw new Error(paymentRequestError.message)
+
+      const { error: orderItemError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId)
+
+      if (orderItemError) throw new Error(orderItemError.message)
+
+      const { error: orderDeleteError } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId)
+
+      if (orderDeleteError) throw new Error(orderDeleteError.message)
+
+      setPendingOrders((prev) => prev.filter((item) => item.id !== orderId))
+    } catch (err) {
+      setOrdersErrorMessage(err.message || 'Kunne ikke avbestille bestillingen')
+    } finally {
+      setOrdersLoading(false)
     }
   }
 
@@ -191,7 +266,7 @@ function Profile() {
       if (bookingsError) {
         setOneToOneErrorMessage(bookingsError.message)
       } else {
-        setOneToOneBookings(bookingsData || [])
+        setOneToOneBookings((bookingsData || []).filter((booking) => booking.booking_status !== 'cancelled' && booking.status !== 'cancelled'))
       }
 
       setOrdersLoading(false)
@@ -201,6 +276,7 @@ function Profile() {
         .from('orders')
         .select(`
           id,
+          created_at,
           total_amount_nok,
           payment_status,
           order_items (
@@ -213,7 +289,8 @@ function Profile() {
             )
           ),
           payment_requests (
-            notes
+            notes,
+            status
           )
         `)
         .eq('user_id', user.id)
@@ -222,7 +299,17 @@ function Profile() {
       if (ordersError) {
         setOrdersErrorMessage(ordersError.message)
       } else {
-        setPendingOrders(ordersData || [])
+        const visiblePendingOrders = (ordersData || []).filter((order) => {
+          const paymentRequests = Array.isArray(order.payment_requests)
+            ? order.payment_requests
+            : order.payment_requests
+              ? [order.payment_requests]
+              : []
+
+          return !paymentRequests.some((paymentRequest) => paymentRequest?.status === 'deleted')
+        })
+
+        setPendingOrders(visiblePendingOrders)
       }
 
       setOrdersLoading(false)
@@ -336,7 +423,7 @@ function Profile() {
           orders={pendingOrders}
           loading={ordersLoading}
           errorMessage={ordersErrorMessage}
-          onRetryPayment={handleRetryPayment}
+          onCancelOrder={handleCancelPendingOrder}
         />
 
         <MyCoursesSection

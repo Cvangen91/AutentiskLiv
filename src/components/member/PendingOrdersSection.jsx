@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router-dom'
-
 function formatDate(dateString) {
   if (!dateString) return 'Dato ukjent'
   const date = new Date(dateString)
@@ -8,8 +6,7 @@ function formatDate(dateString) {
     : date.toLocaleString('nb-NO', { dateStyle: 'short' })
 }
 
-function PendingOrdersSection({ orders, loading, errorMessage, onRetryPayment }) {
-  const navigate = useNavigate()
+function PendingOrdersSection({ orders, loading, errorMessage, onCancelOrder }) {
 
   if (loading) {
     return (
@@ -92,17 +89,10 @@ function PendingOrdersSection({ orders, loading, errorMessage, onRetryPayment })
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
-                        onClick={() => onRetryPayment(order.id)}
-                        className="rounded-lg bg-[#6f7c63] px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                        onClick={() => onCancelOrder(order.id)}
+                        className="rounded-lg btn-red px-3 py-2 text-sm font-medium transition hover:opacity-90"
                       >
-                        Fullføre
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/checkout/${product.id}`)}
-                        className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-                      >
-                        Endre
+                        Avbestill
                       </button>
                     </div>
                   </td>
