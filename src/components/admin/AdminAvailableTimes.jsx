@@ -43,9 +43,12 @@ export default function AdminAvailableTimes() {
     setLoading(true)
     setError('')
 
+    // include related booking and profile information when available
     const { data, error: fetchError } = await supabase
       .from('time_slots')
-      .select('id, start_time, end_time, status, notes, created_at')
+      .select(
+        `id, start_time, end_time, status, notes, created_at, bookings (id, user_id, booking_status, profiles (first_name, last_name, email))`
+      )
       .order('start_time', { ascending: true })
 
     if (fetchError) {
@@ -348,13 +351,13 @@ export default function AdminAvailableTimes() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-stone-200">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Starttid</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Sluttid</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Notater</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Handling</th>
-              </tr>
+                <tr className="border-b border-stone-200">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Starttid</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Sluttid</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Booket av</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Handling</th>
+                </tr>
             </thead>
             <tbody>
               {timeSlots.map((slot) => {
@@ -371,7 +374,18 @@ export default function AdminAvailableTimes() {
                         {formatStatus(slot.status)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-stone-600">{slot.notes || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-stone-600">
+                      {slot.status === 'booked' ? (
+                        (() => {
+                          const booking = (slot.bookings && slot.bookings[0]) || null
+                          const profile = booking?.profiles || null
+                          const name = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : ''
+                          return name || booking?.user_id || '-'
+                        })()
+                      ) : (
+                        '-'
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-sm">
                       <div className="flex gap-2">
                         <button

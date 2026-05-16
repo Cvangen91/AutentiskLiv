@@ -16,7 +16,7 @@ export default function Admin() {
   const tabs = [
     { id: 'courses', label: 'Kurs' },
     { id: 'payments', label: 'Betalinger' },
-    { id: 'bookings', label: 'Ledige tider' },
+    { id: 'bookings', label: '1:1 Bookinger' },
   ]
 
   return (

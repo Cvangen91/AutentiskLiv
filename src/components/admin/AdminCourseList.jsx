@@ -1,4 +1,8 @@
+import { useState } from 'react'
+import AdminCourseAttendeesModal from './AdminCourseAttendeesModal'
+
 function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish }) {
+  const [attendeesCourse, setAttendeesCourse] = useState(null)
   function formatDeliveryMode(value) {
     if (value === 'physical') {
       return 'Fysisk'
@@ -36,6 +40,7 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
   }
 
   return (
+    <>
     <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white">
       <table className="w-full">
         <thead>
@@ -65,6 +70,15 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex justify-end gap-2">
+                    {course.deliveryMode !== 'one_to_one' && (
+                      <button
+                        type="button"
+                        onClick={() => setAttendeesCourse(course)}
+                        className="rounded-lg btn-outline px-3 py-2 text-sm font-medium transition"
+                      >
+                        Se påmeldte
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => onEdit(course)}
@@ -87,6 +101,14 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
         </tbody>
       </table>
     </div>
+    {attendeesCourse && (
+      <AdminCourseAttendeesModal
+        courseId={attendeesCourse.courseId || attendeesCourse.id}
+        title={attendeesCourse.title}
+        onClose={() => setAttendeesCourse(null)}
+      />
+    )}
+    </>
   )
 }
 
