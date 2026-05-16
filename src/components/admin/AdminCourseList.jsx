@@ -74,7 +74,7 @@ function AdminCourseList({ courses, loading, error, onEdit, onDelete, onPublish 
                       <button
                         type="button"
                         onClick={() => setAttendeesCourse(course)}
-                        className="rounded-lg btn-outline px-3 py-2 text-sm font-medium transition"
+                        className="rounded-lg btn-green px-3 py-2 text-sm font-medium transition"
                       >
                         Se påmeldte
                       </button>

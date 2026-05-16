@@ -361,7 +361,10 @@ export default function AdminAvailableTimes() {
             </thead>
             <tbody>
               {timeSlots.map((slot) => {
-                const canDelete = slot.status !== 'booked'
+                // Determine effective status: if there's any non-cancelled booking, treat as booked
+                const hasActiveBooking = Array.isArray(slot.bookings) && slot.bookings.some((b) => b.booking_status !== 'cancelled')
+                const effectiveStatus = hasActiveBooking ? 'booked' : slot.status
+                const canDelete = effectiveStatus !== 'booked'
 
                 return (
                   <tr key={slot.id} className="border-b border-stone-100 hover:bg-stone-50">
@@ -369,15 +372,16 @@ export default function AdminAvailableTimes() {
                     <td className="px-4 py-3 text-sm text-stone-600">{formatDateTime(slot.end_time)}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                        slot.status === 'available' ? 'status-green' : slot.status === 'booked' ? 'status-lavendel' : 'status-red'
+                        effectiveStatus === 'available' ? 'status-green' : effectiveStatus === 'booked' ? 'status-lavendel' : 'status-red'
                       }`}>
-                        {formatStatus(slot.status)}
+                        {formatStatus(effectiveStatus)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-stone-600">
-                      {slot.status === 'booked' ? (
+                      {hasActiveBooking ? (
                         (() => {
-                          const booking = (slot.bookings && slot.bookings[0]) || null
+                          // Prefer to show the first non-cancelled booking's profile
+                          const booking = (slot.bookings || []).find((b) => b.booking_status !== 'cancelled') || null
                           const profile = booking?.profiles || null
                           const name = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : ''
                           return name || booking?.user_id || '-'
