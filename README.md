@@ -2,7 +2,7 @@
 
 Nettside for AutentiskLiv, en norsk kurs- og workshopplattform. Brukere kan bla gjennom og kjøpe kurs, logge inn som member for å se sine bestillinger og kurshistorikk, og administratorer kan administrere kurs, betalingsforespørsler og tilgjengelige tider.
 
-Prosjektet er utviklet som bacheloroppgave ved [INSTITUSJONSnavn].
+Prosjektet er utviklet som bacheloroppgave ved Universitetet i Sør-Øst Norge.
 
 ---
 
