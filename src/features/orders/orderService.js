@@ -1,5 +1,12 @@
 import { supabase } from '../../lib/supabase/client'
 
+const ORDER_CREATION_USER_ERROR = 'Beklager, det skjedde en feil. Prøv igjen senere eller ta kontakt med admin.'
+
+function throwOrderCreationError(step, originalError) {
+  console.error(`[OrderService] ${step}:`, originalError)
+  throw new Error(ORDER_CREATION_USER_ERROR)
+}
+
 export async function createOrderAndPaymentRequest(
   userId,
   productId,
@@ -32,7 +39,7 @@ export async function createOrderAndPaymentRequest(
     .single()
 
   if (orderError) {
-    throw new Error(`Feil ved opprettelse av ordre: ${orderError.message}`)
+    throwOrderCreationError('Feil ved opprettelse av ordre', orderError)
   }
 
   const { error: orderItemError } = await supabase.from('order_items').insert({
@@ -43,7 +50,7 @@ export async function createOrderAndPaymentRequest(
   })
 
   if (orderItemError) {
-    throw new Error(`Feil ved opprettelse av ordredetalj: ${orderItemError.message}`)
+    throwOrderCreationError('Feil ved opprettelse av ordredetalj', orderItemError)
   }
 
   const { data: paymentRequest, error: paymentError } = await supabase
@@ -69,7 +76,7 @@ export async function createOrderAndPaymentRequest(
     .single()
 
   if (paymentError) {
-    throw new Error(`Feil ved opprettelse av betalingsforespørsel: ${paymentError.message}`)
+    throwOrderCreationError('Feil ved opprettelse av betalingsforespørsel', paymentError)
   }
 
   if (selectedTimeSlot?.id) {
@@ -85,11 +92,10 @@ export async function createOrderAndPaymentRequest(
     })
 
     if (bookingError) {
-      throw new Error(`Feil ved opprettelse av booking: ${bookingError.message}`)
+      throwOrderCreationError('Feil ved opprettelse av booking', bookingError)
     }
   }
 
-  // Mark time slot as booked if it was selected
   if (selectedTimeSlot?.id) {
     const { error: timeSlotError } = await supabase
       .from('time_slots')
@@ -98,7 +104,6 @@ export async function createOrderAndPaymentRequest(
 
     if (timeSlotError) {
       console.error(`Advarsel: Kunne ikke oppdatere tidslot status: ${timeSlotError.message}`)
-      // Don't throw error here - the order is already created, just log the warning
     }
   }
 

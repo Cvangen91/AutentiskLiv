@@ -35,7 +35,6 @@ function formatCourseDate(enrollment) {
     return 'Tid ikke satt'
   }
 
-  // For regular courses
   const courseDate = course?.products?.start_at
   if (!courseDate) {
     return 'Fast/løpende kurs'
@@ -134,8 +133,6 @@ function MyCoursesSection({
   onOpenCourse,
   onCancelBooking,
 }) {
-  // Combine 1:1 enrollments and pending bookings, removing duplicates
-  // If a product_id exists in bookings, don't include it from enrollments
   const bookingProductIds = new Set(oneToOneBookings.map((b) => b.product_id))
   const uniqueOneToOneCourses = oneToOneCourses.filter(
     (enrollment) => !bookingProductIds.has(enrollment.courses?.product_id)

@@ -361,7 +361,6 @@ export default function AdminAvailableTimes() {
             </thead>
             <tbody>
               {timeSlots.map((slot) => {
-                // Determine effective status: if there's any non-cancelled booking, treat as booked
                 const hasActiveBooking = Array.isArray(slot.bookings) && slot.bookings.some((b) => b.booking_status !== 'cancelled')
                 const effectiveStatus = hasActiveBooking ? 'booked' : slot.status
                 const canDelete = effectiveStatus !== 'booked'
@@ -380,7 +379,6 @@ export default function AdminAvailableTimes() {
                     <td className="px-4 py-3 text-sm text-stone-600">
                       {hasActiveBooking ? (
                         (() => {
-                          // Prefer to show the first non-cancelled booking's profile
                           const booking = (slot.bookings || []).find((b) => b.booking_status !== 'cancelled') || null
                           const profile = booking?.profiles || null
                           const name = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : ''

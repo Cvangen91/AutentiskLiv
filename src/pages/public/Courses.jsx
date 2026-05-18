@@ -453,8 +453,6 @@ export default function Courses() {
                     />
                   </div>
 
-                  {/* badge moved to footer */}
-
                   <h2 className="text-2xl font-semibold text-stone-900">{product.title}</h2>
                   <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">{product.description}</p>
 

@@ -146,7 +146,7 @@ function MyCourseDetails() {
         <section className="my-course__content">
           <h2 className="my-course__section-title">Kursinnhold</h2>
           <p className="my-course__text">
-            Her kan dere senere vise video, bilder, tekst, moduler og leksjoner.
+            Her vil det senere vises video, bilder, tekst, moduler og leksjoner. Eller link videre til kajabi.
           </p>
         </section>
       </div>

@@ -355,7 +355,7 @@ export default function Home() {
                   ))
                 ) : coursesError ? (
                   <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
-                    Feil ved lasting av kurs: {coursesError}
+                    En feil har oppstått, vennligst prøv igjen senere: {coursesError}
                   </div>
                 ) : courses.length === 0 ? (
                   <div className="w-full rounded-[2rem] border border-stone-200 bg-white/80 p-8 text-center text-stone-700 shadow-[0_10px_30px_rgba(0,0,0,0.06)]">

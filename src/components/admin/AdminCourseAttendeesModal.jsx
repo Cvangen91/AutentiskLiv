@@ -21,7 +21,6 @@ export default function AdminCourseAttendeesModal({ courseId, title, onClose }) 
       setLoading(true)
       setError('')
 
-      // Get product_id for course so we can look up orders
       const { data: courseData, error: courseErr } = await supabase
         .from('courses')
         .select('id, product_id')
@@ -38,7 +37,6 @@ export default function AdminCourseAttendeesModal({ courseId, title, onClose }) 
 
       const productId = courseData?.product_id || null
 
-      // Fetch enrollments with profile info
       const { data: enrollments, error: enrollErr } = await supabase
         .from('enrollments')
         .select('id, user_id, status, profiles (first_name, last_name, email)')
@@ -56,7 +54,6 @@ export default function AdminCourseAttendeesModal({ courseId, title, onClose }) 
 
       const list = enrollments || []
 
-      // If we have a productId and any enrollments, fetch orders for those users
       let paymentMap = {}
 
       if (productId && list.length > 0) {
@@ -71,7 +68,6 @@ export default function AdminCourseAttendeesModal({ courseId, title, onClose }) 
             .order('created_at', { ascending: false })
 
           if (!ordersErr && ordersData && ordersData.length > 0) {
-            // Map latest payment_status per user
             for (const ord of ordersData) {
               if (!paymentMap[ord.user_id]) {
                 paymentMap[ord.user_id] = ord.payment_status || null
@@ -81,7 +77,6 @@ export default function AdminCourseAttendeesModal({ courseId, title, onClose }) 
         }
       }
 
-      // Combine enrollments with payment status and profile
       const attendeesWithPayment = list.map((e) => {
         const profile = e.profiles || e.profile || null
         return {

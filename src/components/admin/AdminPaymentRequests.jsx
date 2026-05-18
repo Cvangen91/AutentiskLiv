@@ -234,7 +234,7 @@ export default function AdminPaymentRequests() {
   }
 
   async function deleteRequest(reqId) {
-    if (!confirm('Slett betalingsforespørselen? Dette kan ikke angres.')) return
+    if (!confirm('Slett bestillingen? Dette kan ikke angres.')) return
 
     const request = requests.find((item) => item.id === reqId)
     const productId = request?.orders?.order_items?.[0]?.product_id || null

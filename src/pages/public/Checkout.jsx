@@ -119,7 +119,7 @@ export default function Checkout() {
           return
         }
       } else {
-        setErrorMessage('Kurset er ikke riktig konfigurert. Kontakt admin.')
+        setErrorMessage('Beklager en feil oppstod. Kontakt admin.')
         setLoading(false)
         return
       }
@@ -247,10 +247,10 @@ export default function Checkout() {
         selectedTimeSlot
       )
 
-      alert('Betalingsforespørsel opprettet! Anne vil behandle fakturaen snart.')
+      alert('Din bestilling er gjennomført. Du vil motta en faktura på e-post eller via vipps snart.')
       navigate('/profile')
     } catch (error) {
-      alert(`Feil: ${error.message}`)
+      alert(error?.message || 'Beklager, det skjedde en feil. Prøv igjen senere eller ta kontakt med admin.')
     } finally {
       setSubmitting(false)
     }
@@ -351,7 +351,7 @@ export default function Checkout() {
               >
                 <h4 className="font-semibold text-stone-900">Faktura</h4>
                 <p className="mt-1 text-sm text-stone-600">
-                  Vi sender faktura til din adresse. Anne vil behandle ordren manuelt.
+                  Vi sender faktura via e-post eller Vipps.
                 </p>
               </button>
 
@@ -524,7 +524,7 @@ export default function Checkout() {
                   onChange={handleBillingChange}
                   rows="3"
                   className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                  placeholder="Eventuelle spesielle instruksjoner"
+                  placeholder="Eventuelle spesielle ønsker eller behov"
                 />
               </div>
             </div>

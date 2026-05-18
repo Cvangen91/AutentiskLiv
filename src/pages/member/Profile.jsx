@@ -120,7 +120,7 @@ function Profile() {
 
       setPendingOrders((prev) => prev.filter((item) => item.id !== orderId))
     } catch (err) {
-      setOrdersErrorMessage(err.message || 'Kunne ikke avbestille bestillingen')
+      setOrdersErrorMessage(err.message || 'Beklager, kunne ikke avbestille bestillingen')
     } finally {
       setOrdersLoading(false)
     }
@@ -162,7 +162,7 @@ function Profile() {
 
       setOneToOneBookings((prev) => prev.filter((b) => b.id !== bookingId))
     } catch (err) {
-      setOneToOneErrorMessage(err.message || 'Kunne ikke avbestille timen')
+      setOneToOneErrorMessage(err.message || 'Beklager, kunne ikke avbestille timen')
     } finally {
       setOneToOneLoading(false)
     }
