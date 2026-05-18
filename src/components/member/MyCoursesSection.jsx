@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 function formatCourseDate(enrollment) {
   const course = enrollment?.products?.courses || enrollment?.courses
   const isOneToOne = course?.delivery_mode === 'one_to_one'
@@ -47,6 +49,8 @@ function formatCourseDate(enrollment) {
 }
 
 function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMessage, onOpenCourse, onCancelBooking }) {
+  const [expandedMobileId, setExpandedMobileId] = useState(null)
+
   if (coursesLoading) {
     return <p className="mt-6 text-stone-700">Laster kurs...</p>
   }
@@ -59,9 +63,91 @@ function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMes
     return <p className="mt-6 text-stone-700">{emptyMessage}</p>
   }
 
+  function renderCourseTitle(enrollment) {
+    const isBooking = Boolean(enrollment?.products)
+    const product = isBooking ? enrollment.products : enrollment.courses?.products
+    return product?.title || '-'
+  }
+
   return (
-    <div className="mt-6 overflow-x-auto rounded-lg border border-stone-200 bg-white">
-      <table className="w-full">
+    <>
+      <div className="mt-6 grid gap-4 md:hidden">
+        {enrollments.map((enrollment) => {
+          const isBooking = Boolean(enrollment?.products)
+          const product = isBooking ? enrollment.products : enrollment.courses?.products
+          const course = isBooking ? enrollment.products?.courses : enrollment.courses
+          const courseId = course?.id
+
+          if (!product) return null
+
+          const isOneToOne = course?.delivery_mode === 'one_to_one'
+          const mobileId = isBooking ? `booking-${enrollment.id}` : `enrollment-${enrollment.id}`
+          const isExpanded = expandedMobileId === mobileId
+
+          return (
+            <article key={`mobile-${mobileId}`} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setExpandedMobileId(isExpanded ? null : mobileId)}
+                className="flex w-full items-start justify-between gap-3 text-left"
+                aria-expanded={isExpanded}
+              >
+                <div>
+                  <h4 className="text-lg font-semibold text-stone-900">{renderCourseTitle(enrollment)}</h4>
+                </div>
+                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">
+                  {isExpanded ? 'Skjul' : 'Se Mer'}
+                </span>
+              </button>
+
+              {isExpanded && (
+                <div className="mt-4 grid gap-3 rounded-2xl bg-stone-50 p-4 text-sm text-stone-700">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Dato</p>
+                    <p className="mt-1 font-medium text-stone-900">{formatCourseDate(enrollment)}</p>
+                  </div>
+
+                  {course?.delivery_mode === 'physical' && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Type</p>
+                      <p className="mt-1 font-medium text-stone-900">Fysisk kurs</p>
+                    </div>
+                  )}
+
+                  {isOneToOne ? (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Handling</p>
+                      <button
+                        type="button"
+                        onClick={() => onCancelBooking && onCancelBooking(enrollment.id)}
+                        className="mt-2 w-full rounded-xl btn-red px-4 py-3 text-sm font-medium transition hover:opacity-90"
+                        disabled={!enrollment.id}
+                      >
+                        Avbestill time
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Handling</p>
+                      <button
+                        type="button"
+                        onClick={() => courseId && onOpenCourse(courseId)}
+                        className="mt-2 w-full rounded-xl bg-[#6f7c63] px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+                        disabled={!courseId}
+                      >
+                        Se mer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </article>
+          )
+        })}
+      </div>
+
+      <div className="mt-6 hidden overflow-x-auto rounded-lg border border-stone-200 bg-white md:block">
+        <table className="w-full">
         <thead>
           <tr className="border-b border-stone-200 bg-stone-50">
             <th className="px-6 py-4 text-left text-sm font-semibold text-stone-900">Tittel</th>
@@ -118,7 +204,8 @@ function CourseList({ enrollments, coursesLoading, coursesErrorMessage, emptyMes
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   )
 }
 

@@ -57,14 +57,14 @@ function Contact() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 pb-16 pt-24 text-stone-900 sm:px-6 sm:pt-28 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        <section className="rounded-[2.5rem] border border-stone-200 bg-white/60 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+        <section className="rounded-[2.5rem] border border-stone-200 bg-white/60 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
               Ta kontakt
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-700">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700 sm:mt-5 sm:text-lg sm:leading-8">
               Har du spørsmål eller vil du vite mer om coaching og healing? 
               Fyll ut skjemaet under, så tar vi kontakt med deg så snart som mulig.
             </p>
@@ -80,8 +80,8 @@ function Contact() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-6 sm:grid-cols-2">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-stone-900">
                   Navn *
@@ -93,7 +93,7 @@ function Contact() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-500 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-200"
+                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-500 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-200"
                   placeholder="Ditt navn"
                 />
               </div>
@@ -109,7 +109,7 @@ function Contact() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-500 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-200"
+                  className="mt-2 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-500 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-200"
                   placeholder="din@email.com"
                 />
               </div>
@@ -166,7 +166,7 @@ function Contact() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-lg bg-stone-900 px-6 py-3 font-medium text-white transition-colors hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-lg bg-stone-900 px-6 py-3.5 font-medium text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? 'Sender...' : 'Send melding'}
               </button>

@@ -50,26 +50,26 @@ function Register() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 py-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 py-14 pt-24 text-stone-900 sm:px-6 sm:py-16 sm:pt-28 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <section className="rounded-[2rem] border border-stone-200 bg-white/60 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md">
+        <section className="rounded-[2rem] border border-stone-200 bg-white/60 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
           
-          <h1 className="text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
             Opprett en personlig brukerkonto
           </h1>
-          <p className="mt-5 text-lg leading-8 text-stone-700">
+          <p className="mt-4 text-base leading-7 text-stone-700 sm:mt-5 sm:text-lg sm:leading-8">
             Registrer deg for å få tilgang til booking av 1:1 timer, kurs og eventer.
           </p>
          
         </section>
 
-        <section className="mt-8 rounded-[2rem] border border-stone-200 bg-white/55 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
-          <h2 className="text-2xl font-semibold text-stone-900">Registrer deg</h2>
+        <section className="mt-7 rounded-[2rem] border border-stone-200 bg-white/55 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:mt-8 sm:p-8">
+          <h2 className="text-xl font-semibold text-stone-900 sm:text-2xl">Registrer deg</h2>
           <p className="mt-2 text-sm text-stone-700">
             Fyll inn kontakt- og fakturainformasjon for å opprette brukeren din.
           </p>
 
-          <form onSubmit={handleRegister} className="mt-6 grid gap-5">
+          <form onSubmit={handleRegister} className="mt-6 grid gap-4 sm:gap-5">
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="grid gap-2">
                 <label className="text-sm font-semibold text-stone-700">Fornavn</label>

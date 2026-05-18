@@ -87,3 +87,45 @@
     padding: 1.5rem;
   }
 }
+
+@media (max-width: 640px) {
+  .my-course {
+    min-height: calc(100dvh - 72px);
+    padding: 5.25rem 1rem 2rem;
+  }
+
+  .my-course__inner {
+    width: 100%;
+  }
+
+  .my-course__header {
+    padding: 1.1rem;
+    border-radius: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .my-course__title {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .my-course__card,
+  .my-course__content {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .my-course__section-title {
+    font-size: 1.2rem;
+  }
+
+  .my-course__text {
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .my-course__header-top button,
+  .my-course__back-button {
+    width: 100%;
+  }
+}

@@ -47,21 +47,21 @@ function Login() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 py-16 pt-28 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+    <div className="min-h-[calc(100vh-88px)] bg-[#ece7dd] px-4 py-14 pt-24 text-stone-900 sm:px-6 sm:py-16 sm:pt-28 lg:px-8">
+      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <section className="max-w-xl">
           <span className="mb-4 inline-flex rounded-full border border-stone-200 bg-white/70 px-4 py-1 text-sm font-medium text-[#6f7c63] shadow-sm backdrop-blur">
             Velkommen tilbake
           </span>
-          <h1 className="text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
             Logg inn og fortsett reisen din
           </h1>
-          <p className="mt-5 max-w-lg text-lg leading-8 text-stone-700">
+          <p className="mt-4 max-w-lg text-base leading-7 text-stone-700 sm:mt-5 sm:text-lg sm:leading-8">
             Her får du tilgang til kursene dine, profilen din og innhold som er laget for medlemmer.
           </p>
 
-          <div className="mt-8 rounded-[2rem] border border-stone-200 bg-white/55 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
-          <form onSubmit={handleLogin} className="grid gap-5">
+          <div className="mt-7 rounded-[2rem] border border-stone-200 bg-white/55 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:mt-8 sm:p-8">
+          <form onSubmit={handleLogin} className="grid gap-4 sm:gap-5">
   <div className="grid gap-2">
     <label htmlFor="email" className="text-sm font-semibold text-stone-700">
       E-post
@@ -100,8 +100,8 @@ function Login() {
           </div>
         </section>
 
-        <aside className="rounded-[2rem] border border-stone-200 bg-white/60 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md">
-          <h2 className="text-2xl font-semibold text-stone-900">Ny her?</h2>
+        <aside className="rounded-[2rem] border border-stone-200 bg-white/60 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
+          <h2 className="text-xl font-semibold text-stone-900 sm:text-2xl">Ny her?</h2>
           <p className="mt-4 text-base leading-7 text-stone-700">
             Opprett en bruker for å få tilgang til kurs, profil og medlemsinnhold.
           </p>

@@ -171,7 +171,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
       <main>
-        <section id="top" className="relative min-h-screen overflow-x-hidden overflow-y-hidden">
+        <section id="top" className="relative overflow-x-hidden overflow-y-hidden">
           <div className="absolute inset-0">
             <video
               autoPlay
@@ -186,8 +186,8 @@ export default function Home() {
             <div className="absolute inset-0 bg-black/15" />
           </div>
 
-          <div className="relative z-30 min-h-screen">
-            <div className="flex min-h-screen items-center justify-center px-6">
+            <div className="relative z-30">
+              <div className="flex min-h-[70vh] items-center justify-center px-6 sm:min-h-screen">
               <div className={`hero-logo-wrap ${logoReady ? 'hero-logo-ready' : ''}`}>
                 <div className="hero-logo-inner">
                   <img
@@ -206,7 +206,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="absolute bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
+            <div className="absolute bottom-10 sm:bottom-20 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center text-center">
               <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
                 Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
               </p>
@@ -218,7 +218,7 @@ export default function Home() {
                     .getElementById('about-anne')
                     ?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="scroll-indicator mt-3 cursor-pointer transition hover:translate-y-1 focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-transparent"
+                className="scroll-indicator mt-3 hidden sm:inline-flex cursor-pointer transition hover:translate-y-1 focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-transparent"
                 aria-label="Scroll ned til biografi"
               >
                 <svg width="28" height="18" viewBox="0 0 28 18">
@@ -238,7 +238,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 right-0 z-20 h-32 bg-gradient-to-b from-transparent to-[#ece7dd]" />
         </section>
 
-        <section id="about-anne" className="bg-[#ece7dd] px-6 py-16">
+        <section id="about-anne" className="bg-[#ece7dd] px-6 py-8 sm:py-16">
           <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
             <div className="order-2 lg:order-1">
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
@@ -275,7 +275,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 flex justify-center">
+          <div className="mt-6 sm:mt-12 flex justify-center">
             <button
               type="button"
               onClick={() => {
@@ -291,7 +291,7 @@ export default function Home() {
                   });
                 }
               }}
-              className="rounded-full p-3 text-stone-600 transition hover:translate-y-1 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400"
+              className="rounded-full p-3 hidden sm:inline-flex text-stone-600 transition hover:translate-y-1 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-400"
               aria-label="Scroll ned til kurs"
             >
               <svg width="28" height="18" viewBox="0 0 28 18">
@@ -328,14 +328,14 @@ export default function Home() {
                 onMouseLeave={() => setIsPaused(false)}
                 onTouchStart={() => setIsPaused(true)}
                 onTouchEnd={() => setIsPaused(false)}
-                className="flex w-full gap-6 overflow-x-auto scroll-smooth px-10"
+                className="flex w-full gap-4 overflow-x-auto scroll-smooth px-4 sm:gap-6 sm:px-10"
                 style={{ scrollbarWidth: 'none' }}
               >
                 {loadingCourses ? (
                   Array.from({ length: 3 }).map((_, index) => (
                     <div
                       key={index}
-                      className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
+                      className="w-[82vw] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:w-[320px] md:w-[360px]"
                     >
                       <div className="h-56 bg-stone-300/80" />
                       <div className="p-6">
@@ -368,17 +368,17 @@ export default function Home() {
                     return (
                       <div
                         key={`${course.id}-${index}`}
-                        className="w-[320px] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 text-left shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:w-[360px]"
+                        className="w-[82vw] flex-shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-white/90 text-left shadow-[0_10px_30px_rgba(0,0,0,0.06)] sm:w-[320px] md:w-[360px]"
                       >
-                        <div className="p-6 text-left">
-                          <h3 className="text-2xl font-semibold text-stone-900">
+                        <div className="p-5 text-left sm:p-6">
+                          <h3 className="text-xl font-semibold text-stone-900 sm:text-2xl">
                             {course.title}
                           </h3>
-                          <p className="mt-3 line-clamp-3 text-base leading-7 text-stone-700">
+                          <p className="mt-3 line-clamp-3 text-sm leading-6 text-stone-700 sm:text-base sm:leading-7">
                             {course.description}
                           </p>
 
-                          <div className="mt-6 text-sm text-stone-700">
+                          <div className="mt-5 text-sm text-stone-700 sm:mt-6">
                             <div className="w-full">
                               <div className="w-full rounded-2xl bg-stone-50 px-4 py-3 text-left">
                                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">Pris</p>
@@ -401,7 +401,7 @@ export default function Home() {
                                 ) : null}
                               </div>
 
-                              <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-5">
+                              <div className="mt-5 flex items-center justify-between border-t border-stone-200 pt-4 sm:mt-6 sm:pt-5">
                                 {hasValidCapacity(courseInfo) ? (
                                   <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
                                     Ledig plass

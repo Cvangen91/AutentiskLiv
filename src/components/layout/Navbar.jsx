@@ -94,7 +94,7 @@ function Navbar() {
           )}
         </nav>
 
-        <div className="flex items-center justify-end gap-2 sm:gap-3">
+        <div className="hidden md:flex items-center justify-end gap-2 sm:gap-3">
           {!user ? (
             <>
               <Link
@@ -118,14 +118,16 @@ function Navbar() {
               Logg ut
             </button>
           )}
+        </div>
 
+        <div className="flex items-center justify-end gap-2 sm:gap-3 md:hidden">
           <button
             type="button"
             aria-label={menuOpen ? 'Lukk meny' : 'Åpne meny'}
             aria-expanded={menuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMenuOpen((current) => !current)}
-            className={`inline-flex items-center justify-center rounded-xl border px-3 py-2 transition md:hidden ${scrolledPastHero ? 'border-stone-200 bg-white text-stone-700 shadow-sm' : 'border-white/20 bg-white/10 text-white backdrop-blur-sm'}`}
+            className={`inline-flex items-center justify-center rounded-xl border px-3 py-2 transition absolute right-4 top-1/2 -translate-y-1/2 md:static md:translate-y-0 ${scrolledPastHero ? 'border-stone-200 bg-white text-stone-700 shadow-sm' : 'border-white/20 bg-white/10 text-white backdrop-blur-sm'}`}
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -134,8 +136,16 @@ function Navbar() {
 
       <div
         id="mobile-navigation"
-        className={`md:hidden ${menuOpen ? 'block' : 'hidden'} border-t ${scrolledPastHero ? 'border-stone-200 bg-white/96 text-stone-700 shadow-md backdrop-blur-md' : 'border-white/10 bg-black/20 text-white backdrop-blur-sm'}`}
+        className={`md:hidden relative ${menuOpen ? 'block' : 'hidden'} border-t ${scrolledPastHero ? 'border-stone-200 bg-white/96 text-stone-700 shadow-md backdrop-blur-md' : 'border-white/10 bg-black/20 text-white backdrop-blur-sm'}`}
       >
+        <button
+          type="button"
+          aria-label="Lukk meny"
+          onClick={() => setMenuOpen(false)}
+          className="absolute right-4 top-4 inline-flex items-center justify-center rounded-full p-2 transition hover:bg-black/5 md:hidden"
+        >
+          <X size={20} />
+        </button>
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 sm:px-8">
           <Link to="/courses" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
             Kurs
@@ -153,10 +163,19 @@ function Navbar() {
               Adminside
             </Link>
           )}
-          {!user && (
-            <Link to="/register" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
-              Bli medlem
-            </Link>
+          {!user ? (
+            <>
+              <Link to="/register" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
+                Bli medlem
+              </Link>
+              <Link to="/login" className="rounded-lg px-2 py-2 font-medium transition hover:bg-black/5 hover:opacity-80">
+                Logg inn
+              </Link>
+            </>
+          ) : (
+            <button type="button" onClick={handleLogout} className="rounded-lg px-2 py-2 text-left font-medium transition hover:bg-black/5 hover:opacity-80">
+              Logg ut
+            </button>
           )}
         </div>
       </div>

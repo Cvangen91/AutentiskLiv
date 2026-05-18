@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 function formatDate(dateString) {
   if (!dateString) return 'Dato ukjent'
   const date = new Date(dateString)
@@ -7,6 +9,7 @@ function formatDate(dateString) {
 }
 
 function PendingOrdersSection({ orders, loading, errorMessage, onCancelOrder }) {
+  const [expandedMobileId, setExpandedMobileId] = useState(null)
 
   if (loading) {
     return (
@@ -49,7 +52,65 @@ function PendingOrdersSection({ orders, loading, errorMessage, onCancelOrder }) 
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-stone-200 bg-white">
+      <div className="mt-6 grid gap-4 md:hidden">
+        {orders.map((order) => {
+          const orderItem = order.order_items?.[0]
+          const product = orderItem?.products
+          const isPending = order.payment_status === 'pending'
+          const mobileId = `order-${order.id}`
+          const isExpanded = expandedMobileId === mobileId
+
+          if (!product) return null
+
+          return (
+            <article key={`mobile-${mobileId}`} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setExpandedMobileId(isExpanded ? null : mobileId)}
+                className="flex w-full items-start justify-between gap-3 text-left"
+                aria-expanded={isExpanded}
+              >
+                <div>
+                  <h4 className="text-lg font-semibold text-stone-900">{product.title}</h4>
+                  <p className="mt-1 text-xs text-stone-600">Ordre: {order.id.slice(0, 8)}</p>
+                </div>
+
+                <span
+                  className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                  style={{
+                    backgroundColor: isPending ? 'var(--action-yellow-bg)' : 'var(--action-red-bg)',
+                    color: isPending ? 'var(--action-yellow-text)' : 'var(--action-red-text)',
+                  }}
+                >
+                  {isPending ? 'Venter' : 'Mislykket'}
+                </span>
+              </button>
+
+              {isExpanded && (
+                <div className="mt-4 grid gap-3 rounded-2xl bg-stone-50 p-4 text-sm text-stone-700">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Beløp</p>
+                    <p className="mt-1 font-medium text-stone-900">{order.total_amount_nok} NOK</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">Handling</p>
+                    <button
+                      type="button"
+                      onClick={() => onCancelOrder(order.id)}
+                      className="mt-2 w-full rounded-xl btn-red px-4 py-3 text-sm font-medium transition hover:opacity-90"
+                    >
+                      Avbestill bestilling
+                    </button>
+                  </div>
+                </div>
+              )}
+            </article>
+          )
+        })}
+      </div>
+
+      <div className="mt-6 hidden overflow-x-auto rounded-lg border border-stone-200 bg-white md:block">
         <table className="w-full">
           <thead>
             <tr className="border-b border-stone-200 bg-stone-50">

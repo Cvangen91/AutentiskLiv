@@ -28,7 +28,7 @@ function ProfileContactSection({
           className="flex w-full items-center justify-between rounded-2xl bg-stone-50 px-4 py-3 text-left transition hover:bg-stone-100"
         >
           <span className="text-xl font-semibold text-stone-900">Kontaktinformasjon</span>
-          <span className="text-sm font-semibold text-stone-600">{isOpen ? 'Lukk' : 'Åpne'}</span>
+          <span className="text-sm font-semibold text-stone-600">{isOpen ? 'Skjul' : 'Se Mer'}</span>
         </button>
       </div>
 
