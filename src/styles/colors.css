@@ -1,5 +1,36 @@
-/* Centralized action color variables and utility classes */
+/* Centralized design tokens and utility overrides */
 :root {
+  --color-background: #ece7dd;
+  --color-surface: rgba(255, 255, 255, 0.55);
+  --color-surface-strong: rgba(255, 255, 255, 0.65);
+  --color-surface-card: rgba(255, 255, 255, 0.9);
+  --color-surface-hover: #f5f3f0;
+
+  --color-primary: #6f7c63;
+  --color-primary-hover: #617255;
+  --color-primary-soft: #f2f5ee;
+  --color-primary-ring: rgb(111 124 99 / 0.15);
+  --color-primary-ring-soft: rgb(111 124 99 / 0.1);
+
+  --color-text: #1f2937;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #6b7280;
+  --color-text-muted: #888888;
+
+  --color-border: #e5e7eb;
+  --color-overlay: rgba(0, 0, 0, 0.15);
+  --color-hero-text: rgba(255, 255, 255, 0.92);
+  --color-hero-text-shadow: rgba(255, 255, 255, 0.35);
+
+  --color-surface-light: #f5f3f0;
+  --color-surface-lighter: #f3f4f6;
+  --color-surface-disabled: #d6d3d0;
+
+  --radius-lg: 1.5rem;
+  --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.06);
+  --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.08);
+
   --action-green-bg: #e9f3ea;
   --action-green-text: #38533f;
   --action-green-hover: #d6e6d1;
@@ -12,9 +43,142 @@
   --action-red-text: #7a2a2a;
   --action-red-hover: #fbd7d0;
 
-  --action-yellow-bg: #fef3c7; /* light yellow */
+  --action-yellow-bg: #fef3c7;
   --action-yellow-text: #92400e;
   --action-yellow-hover: #fde68a;
+}
+
+.bg-\[\#6f7c63\] {
+  background-color: var(--color-primary);
+}
+
+.hover\:bg-\[\#617255\]:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.text-\[\#6f7c63\] {
+  color: var(--color-primary);
+}
+
+.border-\[\#6f7c63\] {
+  border-color: var(--color-primary);
+}
+
+.hover\:text-\[\#6f7c63\]:hover {
+  color: var(--color-primary);
+}
+
+.focus\:border-\[\#6f7c63\]:focus {
+  border-color: var(--color-primary);
+}
+
+.focus\:ring-\[\#6f7c63\]\/15:focus {
+  --tw-ring-color: var(--color-primary-ring);
+}
+
+.ring-\[\#6f7c63\]\/10 {
+  --tw-ring-color: var(--color-primary-ring-soft);
+}
+
+.bg-\[\#ece7dd\] {
+  background-color: var(--color-background);
+}
+
+.to-\[\#ece7dd\] {
+  --tw-gradient-to: var(--color-background);
+}
+
+.bg-\[\#f2f5ee\] {
+  background-color: var(--color-primary-soft);
+}
+
+.hover\:bg-\[\#f5f3f0\]:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.bg-white\/55 {
+  background-color: var(--color-surface);
+}
+
+.bg-white\/60 {
+  background-color: var(--color-surface-strong);
+}
+
+.bg-white\/65 {
+  background-color: var(--color-surface-strong);
+}
+
+.bg-white\/70 {
+  background-color: var(--color-surface-card);
+}
+
+.bg-white\/80 {
+  background-color: var(--color-surface-card);
+}
+
+.bg-white\/90 {
+  background-color: var(--color-surface-card);
+}
+
+.text-stone-900 {
+  color: var(--color-text-primary);
+}
+
+.text-stone-700 {
+  color: var(--color-text-secondary);
+}
+
+.text-stone-600 {
+  color: var(--color-text-tertiary);
+}
+
+.text-stone-500 {
+  color: var(--color-text-muted);
+}
+
+.border-stone-200 {
+  border-color: var(--color-border);
+}
+
+.border-stone-300 {
+  border-color: #d1d5db;
+}
+
+.bg-stone-50 {
+  background-color: var(--color-surface-light);
+}
+
+.bg-stone-100 {
+  background-color: var(--color-surface-lighter);
+}
+
+.bg-stone-200 {
+  background-color: #e5e7eb;
+}
+
+.bg-stone-300 {
+  background-color: var(--color-surface-disabled);
+}
+
+.hover\:bg-stone-50:hover {
+  background-color: var(--color-surface-light);
+}
+
+.placeholder-stone-400::placeholder {
+  color: #9ca3af;
+}
+
+.placeholder-stone-400 {
+  --tw-placeholder-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-placeholder-opacity));
+}
+
+.bg-white {
+  background-color: #ffffff;
+}
+
+.text-white {
+  color: #ffffff;
 }
 
 /* Action button utilities used in admin UI */

@@ -78,8 +78,8 @@ function PendingOrdersSection({ orders, loading, errorMessage, onCancelOrder }) 
                     <span
                       className="inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
                       style={{
-                        backgroundColor: isPending ? 'rgb(254 243 199 / 1)' : 'rgb(254 226 226 / 1)',
-                        color: isPending ? 'rgb(180 83 9 / 1)' : 'rgb(185 28 28 / 1)',
+                        backgroundColor: isPending ? 'var(--action-yellow-bg)' : 'var(--action-red-bg)',
+                        color: isPending ? 'var(--action-yellow-text)' : 'var(--action-red-text)',
                       }}
                     >
                       {isPending ? 'Venter' : 'Mislykket'}
