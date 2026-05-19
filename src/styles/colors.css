@@ -168,11 +168,6 @@
   color: #9ca3af;
 }
 
-.placeholder-stone-400 {
-  --tw-placeholder-opacity: 1;
-  color: rgb(156 163 175 / var(--tw-placeholder-opacity));
-}
-
 .bg-white {
   background-color: #ffffff;
 }

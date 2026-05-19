@@ -139,16 +139,24 @@ export default function Checkout() {
         .eq('id', user.id)
         .maybeSingle()
 
-      if (!profileError && profileData) {
-        setBillingData((prev) => ({
-          ...prev,
-          billing_name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || prev.billing_name,
-          billing_phone: profileData.phone || prev.billing_phone,
-          billing_address_line1: profileData.address || prev.billing_address_line1,
-          billing_postal_code: profileData.zipcode || prev.billing_postal_code,
-          billing_city: profileData.city || prev.billing_city,
-        }))
+      if (profileError) {
+        return
       }
+
+      const metadata = user.user_metadata || {}
+      const resolvedFirstName = profileData?.first_name || metadata.first_name || ''
+      const resolvedLastName = profileData?.last_name || metadata.last_name || ''
+      const resolvedName = `${resolvedFirstName} ${resolvedLastName}`.trim()
+
+      setBillingData((prev) => ({
+        ...prev,
+        billing_name: resolvedName || prev.billing_name,
+        billing_email: user.email || prev.billing_email,
+        billing_phone: profileData?.phone || metadata.phone || prev.billing_phone,
+        billing_address_line1: profileData?.address || metadata.address || prev.billing_address_line1,
+        billing_postal_code: profileData?.zipcode || metadata.zipcode || prev.billing_postal_code,
+        billing_city: profileData?.city || metadata.city || prev.billing_city,
+      }))
     }
 
     fetchProfileData()
