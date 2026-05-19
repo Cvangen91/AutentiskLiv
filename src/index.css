@@ -20,7 +20,7 @@ body {
   background: var(--color-background);
   color: var(--color-text);
 }
-/* ================= HERO LOGO ================= */
+/* HERO LOGO */
 
 .hero-logo-wrap {
   width: min(92vw, 720px);
@@ -86,7 +86,7 @@ body {
   animation-delay: 3.4s, 3.4s;
 }
 
-/* ================= ANIMATIONS ================= */
+/*  ANIMASJON */
 
 @keyframes logoRollOut {
   0% {
