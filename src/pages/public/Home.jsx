@@ -52,7 +52,7 @@ export default function Home() {
   const [logoReady, setLogoReady] = useState(false);
 
   const visibleCourses = courses.length > 0 ? [...courses, ...courses] : [];
-
+// Starter animasjonen når begge logo delene er lastet 
   function handleLogoLoaded() {
     logoImagesLoaded.current += 1;
 
@@ -111,7 +111,7 @@ export default function Home() {
 
     fetchCourses();
   }, []);
-
+// Auto Scroll på kurs 
   useEffect(() => {
     if (!scrollRef.current || courses.length === 0) return;
 
@@ -126,10 +126,10 @@ export default function Home() {
       }
 
       el.scrollBy({
-        left: 420,
+        left: 350,
         behavior: 'smooth',
       });
-    }, 3500);
+    }, 5000);
 
     return () => clearInterval(id);
   }, [isPaused, courses.length]);
@@ -167,7 +167,7 @@ export default function Home() {
   function getCourseInfo(course) {
     return Array.isArray(course?.courses) ? course.courses[0] : course?.courses;
   }
-
+// hero- video, biografi og kurs 
   return (
     <div className="min-h-screen bg-[#ece7dd] text-stone-900">
       <main>
@@ -210,7 +210,7 @@ export default function Home() {
               <p className="hero-subtitle text-white/90 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
                 Autentisk betyr ekte. Et ekte liv, finne tilbake til hvem man egentlig er
               </p>
-
+{/* Scroll knapp til biografi */}
               <button
                 type="button"
                 onClick={() => {
