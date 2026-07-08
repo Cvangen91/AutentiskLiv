@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase/client'
 import { useAuth } from '../../features/auth/useAuth'
@@ -27,6 +27,146 @@ function formatTimeSlotRange(startValue, endValue) {
   }
 
   return `${start.toLocaleString('nb-NO', { dateStyle: 'medium', timeStyle: 'short' })} - ${end.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`
+}
+
+function BillingFields({ values, onChange }) {
+  return (
+    <div className="mt-5 space-y-4 sm:mt-6">
+      <div>
+        <label className="block text-sm font-medium text-stone-700">Fullt navn *</label>
+        <input
+          type="text"
+          name="billing_name"
+          value={values.billing_name}
+          onChange={onChange}
+          className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+          placeholder="Ditt fulle navn"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700">E-post *</label>
+        <input
+          type="email"
+          name="billing_email"
+          value={values.billing_email}
+          onChange={onChange}
+          className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700">Telefon</label>
+        <input
+          type="tel"
+          name="billing_phone"
+          value={values.billing_phone}
+          onChange={onChange}
+          className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+          placeholder="Ditt telefonnummer"
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-stone-700">Bedrift/Organisasjon</label>
+          <input
+            type="text"
+            name="billing_company"
+            value={values.billing_company}
+            onChange={onChange}
+            className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+            placeholder="Valgfritt"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-700">Organisasjonsnummer</label>
+          <input
+            type="text"
+            name="billing_org_number"
+            value={values.billing_org_number}
+            onChange={onChange}
+            className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+            placeholder="Valgfritt"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700">Adresse *</label>
+        <input
+          type="text"
+          name="billing_address_line1"
+          value={values.billing_address_line1}
+          onChange={onChange}
+          className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+          placeholder="Gatenavn og husnummer"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700">Adresse (linje 2)</label>
+        <input
+          type="text"
+          name="billing_address_line2"
+          value={values.billing_address_line2}
+          onChange={onChange}
+          className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+          placeholder="Bygning, leilighet, etc."
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-stone-700">Postnummer *</label>
+          <input
+            type="text"
+            name="billing_postal_code"
+            value={values.billing_postal_code}
+            onChange={onChange}
+            className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+            placeholder="f.eks. 0150"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-700">By *</label>
+          <input
+            type="text"
+            name="billing_city"
+            value={values.billing_city}
+            onChange={onChange}
+            className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+            placeholder="By"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700">Land</label>
+        <input
+          type="text"
+          name="billing_country"
+          value={values.billing_country}
+          onChange={onChange}
+          className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700">Notater</label>
+        <textarea
+          name="notes"
+          value={values.notes}
+          onChange={onChange}
+          rows="3"
+          className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
+          placeholder="Eventuelle spesielle ønsker eller behov"
+        />
+      </div>
+    </div>
+  )
 }
 
 export default function Checkout() {
@@ -59,6 +199,9 @@ export default function Checkout() {
   })
 
   const [submitting, setSubmitting] = useState(false)
+  const [paypalError, setPaypalError] = useState('')
+  const pendingPaypalOrderRef = useRef(null)
+  const billingDataRef = useRef(billingData)
 
   useEffect(() => {
     if (authLoading) return
@@ -213,6 +356,10 @@ export default function Checkout() {
     }
   }, [course, selectedTimeSlotId])
 
+  useEffect(() => {
+    billingDataRef.current = billingData
+  }, [billingData])
+
   function handleBillingChange(e) {
     const { name, value } = e.target
     setBillingData((prev) => ({
@@ -267,6 +414,95 @@ export default function Checkout() {
   function handleVippsSubmit() {
     alert('Vipps-betaling kommer snart!')
   }
+
+  const billingRequiredFieldsFilled = Boolean(
+    billingData.billing_name &&
+      billingData.billing_email &&
+      billingData.billing_address_line1 &&
+      billingData.billing_postal_code &&
+      billingData.billing_city
+  )
+
+  useEffect(() => {
+    if (selectedPaymentMethod !== 'paypal') return
+    if (!product || !course || !billingRequiredFieldsFilled) return
+    if (course.delivery_mode === 'one_to_one' && !selectedTimeSlot) return
+
+    let cancelled = false
+
+    function renderPaypalButtons() {
+      if (cancelled || !window.paypal) return
+
+      const container = document.getElementById('paypal-button-container')
+      if (!container) return
+      container.innerHTML = ''
+
+      window.paypal
+        .Buttons({
+          createOrder: async () => {
+            setPaypalError('')
+
+            const { data, error } = await supabase.functions.invoke('paypal-create-order', {
+              body: {
+                productId: product.id,
+                courseId: course.id,
+                billingData: billingDataRef.current,
+                selectedTimeSlot,
+              },
+            })
+
+            if (error || data?.error) {
+              throw new Error(data?.error || error.message)
+            }
+
+            pendingPaypalOrderRef.current = data
+            return data.paypalOrderId
+          },
+          onApprove: async () => {
+            setSubmitting(true)
+            try {
+              const { data, error } = await supabase.functions.invoke('paypal-capture-order', {
+                body: {
+                  paypalOrderId: pendingPaypalOrderRef.current?.paypalOrderId,
+                  localOrderId: pendingPaypalOrderRef.current?.localOrderId,
+                },
+              })
+
+              if (error || data?.error || data?.status !== 'COMPLETED') {
+                throw new Error(data?.error || 'Betalingen kunne ikke bekreftes.')
+              }
+
+              alert('Betalingen er gjennomført! Du har nå tilgang til kurset.')
+              navigate('/profile')
+            } catch (err) {
+              setPaypalError(err?.message || 'Noe gikk galt under bekreftelse av betalingen.')
+            } finally {
+              setSubmitting(false)
+            }
+          },
+          onError: (err) => {
+            console.error('[PayPal]', err)
+            setPaypalError('Noe gikk galt med PayPal-betalingen. Prøv igjen.')
+          },
+        })
+        .render('#paypal-button-container')
+    }
+
+    if (window.paypal) {
+      renderPaypalButtons()
+    } else {
+      const script = document.createElement('script')
+      script.src = `https://www.paypal.com/sdk/js?client-id=${
+        import.meta.env.VITE_PAYPAL_CLIENT_ID
+      }&currency=NOK`
+      script.addEventListener('load', renderPaypalButtons)
+      document.body.appendChild(script)
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedPaymentMethod, product, course, selectedTimeSlot, billingRequiredFieldsFilled])
 
   if (!user) {
     return null
@@ -351,7 +587,7 @@ export default function Checkout() {
           <section className="rounded-[2rem] border border-stone-200 bg-white/65 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
             <h3 className="text-lg font-semibold text-stone-900">Velg betalingsmåte</h3>
 
-            <div className="mt-5 grid gap-4 sm:mt-6 sm:grid-cols-2">
+            <div className="mt-5 grid gap-4 sm:mt-6 sm:grid-cols-3">
               <button
                 type="button"
                 className="rounded-2xl border-2 border-[#6f7c63] bg-white p-5 text-left transition hover:bg-[#f5f3f0] sm:p-6"
@@ -361,6 +597,15 @@ export default function Checkout() {
                 <p className="mt-1 text-sm text-stone-600">
                   Vi sender faktura via e-post eller Vipps.
                 </p>
+              </button>
+
+              <button
+                type="button"
+                className="rounded-2xl border-2 border-[#6f7c63] bg-white p-5 text-left transition hover:bg-[#f5f3f0] sm:p-6"
+                onClick={() => setSelectedPaymentMethod('paypal')}
+              >
+                <h4 className="font-semibold text-stone-900">PayPal</h4>
+                <p className="mt-1 text-sm text-stone-600">Betal direkte med PayPal.</p>
               </button>
 
               <button
@@ -379,163 +624,7 @@ export default function Checkout() {
           <section className="rounded-[2rem] border border-stone-200 bg-white/65 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
             <h3 className="text-lg font-semibold text-stone-900">Faktureringsopplysninger</h3>
 
-            <div className="mt-5 space-y-4 sm:mt-6">
-              <div>
-                <label className="block text-sm font-medium text-stone-700">
-                  Fullt navn *
-                </label>
-                <input
-                  type="text"
-                  name="billing_name"
-                  value={billingData.billing_name}
-                  onChange={handleBillingChange}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                  placeholder="Ditt fulle navn"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700">
-                  E-post *
-                </label>
-                <input
-                  type="email"
-                  name="billing_email"
-                  value={billingData.billing_email}
-                  onChange={handleBillingChange}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700">
-                  Telefon
-                </label>
-                <input
-                  type="tel"
-                  name="billing_phone"
-                  value={billingData.billing_phone}
-                  onChange={handleBillingChange}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                  placeholder="Ditt telefonnummer"
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-stone-700">
-                    Bedrift/Organisasjon
-                  </label>
-                  <input
-                    type="text"
-                    name="billing_company"
-                    value={billingData.billing_company}
-                    onChange={handleBillingChange}
-                    className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                    placeholder="Valgfritt"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-stone-700">
-                    Organisasjonsnummer
-                  </label>
-                  <input
-                    type="text"
-                    name="billing_org_number"
-                    value={billingData.billing_org_number}
-                    onChange={handleBillingChange}
-                    className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                    placeholder="Valgfritt"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700">
-                  Adresse *
-                </label>
-                <input
-                  type="text"
-                  name="billing_address_line1"
-                  value={billingData.billing_address_line1}
-                  onChange={handleBillingChange}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                  placeholder="Gatenavn og husnummer"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700">
-                  Adresse (linje 2)
-                </label>
-                <input
-                  type="text"
-                  name="billing_address_line2"
-                  value={billingData.billing_address_line2}
-                  onChange={handleBillingChange}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                  placeholder="Bygning, leilighet, etc."
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-stone-700">
-                    Postnummer *
-                  </label>
-                  <input
-                    type="text"
-                    name="billing_postal_code"
-                    value={billingData.billing_postal_code}
-                    onChange={handleBillingChange}
-                    className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                    placeholder="f.eks. 0150"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-stone-700">
-                    By *
-                  </label>
-                  <input
-                    type="text"
-                    name="billing_city"
-                    value={billingData.billing_city}
-                    onChange={handleBillingChange}
-                    className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                    placeholder="By"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700">
-                  Land
-                </label>
-                <input
-                  type="text"
-                  name="billing_country"
-                  value={billingData.billing_country}
-                  onChange={handleBillingChange}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700">
-                  Notater
-                </label>
-                <textarea
-                  name="notes"
-                  value={billingData.notes}
-                  onChange={handleBillingChange}
-                  rows="3"
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-stone-900 placeholder-stone-400 focus:border-[#6f7c63] focus:outline-none"
-                  placeholder="Eventuelle spesielle ønsker eller behov"
-                />
-              </div>
-            </div>
+            <BillingFields values={billingData} onChange={handleBillingChange} />
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button
@@ -550,6 +639,35 @@ export default function Checkout() {
               <button
                 type="button"
                 className="rounded-2xl border border-stone-200 px-6 py-3.5 font-semibold text-stone-700 transition hover:bg-stone-50"
+                onClick={() => setSelectedPaymentMethod(null)}
+                disabled={submitting}
+              >
+                Tilbake
+              </button>
+            </div>
+          </section>
+        )}
+
+        {selectedPaymentMethod === 'paypal' && (
+          <section className="rounded-[2rem] border border-stone-200 bg-white/65 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md sm:p-8">
+            <h3 className="text-lg font-semibold text-stone-900">Faktureringsopplysninger</h3>
+
+            <BillingFields values={billingData} onChange={handleBillingChange} />
+
+            <div className="mt-8">
+              {!billingRequiredFieldsFilled ? (
+                <p className="text-sm text-stone-600">
+                  Fyll ut de obligatoriske feltene over for å vise PayPal-knappen.
+                </p>
+              ) : (
+                <div id="paypal-button-container" />
+              )}
+
+              {paypalError && <p className="mt-3 text-sm text-red-600">{paypalError}</p>}
+
+              <button
+                type="button"
+                className="mt-4 rounded-2xl border border-stone-200 px-6 py-3.5 font-semibold text-stone-700 transition hover:bg-stone-50"
                 onClick={() => setSelectedPaymentMethod(null)}
                 disabled={submitting}
               >
