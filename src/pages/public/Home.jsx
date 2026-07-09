@@ -308,6 +308,42 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="eme-geo" className="bg-[#ece7dd] px-6 pb-8 pt-2 sm:pb-16 sm:pt-6">
+          <div className="mx-auto grid max-w-7xl gap-6 sm:grid-cols-2">
+            <div className="rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">Metode</p>
+              <h2 className="mt-2 text-2xl font-semibold text-stone-900 sm:text-3xl">EME</h2>
+              <p className="mt-4 text-lg leading-8 text-stone-700">
+                EME er en av metodene Anne bruker i deler av healingarbeidet sitt. Vil du forstå mer om hva EME er og hvordan det kan hjelpe deg?
+              </p>
+              <a
+                href="https://eme.autentiskliv.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+              >
+                Lær mer om EME
+              </a>
+            </div>
+
+            <div className="rounded-[2.25rem] border border-stone-200 bg-white/55 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-md">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#6f7c63]">Sertifisering</p>
+              <h2 className="mt-2 text-2xl font-semibold text-stone-900 sm:text-3xl">GEO</h2>
+              <p className="mt-4 text-lg leading-8 text-stone-700">
+                Anne er GEO-sertifisert innen fjernhealing. Vil du lære mer om hva GEO-metoden er og hvordan den fungerer?
+              </p>
+              <a
+                href="https://geo.autentiskliv.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[#6f7c63] px-5 py-3.5 font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+              >
+                Lær mer om GEO
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section id="courses" className="bg-[#ece7dd] py-16">
 
           <div className="relative mx-auto max-w-7xl px-4">

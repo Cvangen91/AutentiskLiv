@@ -79,6 +79,25 @@ function About() {
               <img src={glh2Badge} alt="Utdanningsbadge 3" className="h-auto w-full rounded-lg shadow-md" />
               <img src={glh3Badge} alt="Utdanningsbadge 4" className="h-auto w-full rounded-lg shadow-md" />
             </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <a
+                href="https://eme.autentiskliv.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-[#6f7c63] px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+              >
+                Lær mer om EME
+              </a>
+              <a
+                href="https://geo.autentiskliv.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-[#6f7c63] px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[#617255]"
+              >
+                Lær mer om GEO
+              </a>
+            </div>
           </div>
         </section>
 
