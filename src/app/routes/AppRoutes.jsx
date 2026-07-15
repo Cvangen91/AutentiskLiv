@@ -9,6 +9,7 @@ import About from '../../pages/public/About'
 import Contact from '../../pages/public/Contact'
 import Login from '../../pages/public/Login'
 import Register from '../../pages/public/Register'
+import UpdatePassword from '../../pages/public/UpdatePassword'
 import Courses from '../../pages/public/Courses'
 import Checkout from '../../pages/public/Checkout'
 import Profile from '../../pages/member/Profile'
@@ -29,6 +30,7 @@ function AppRoutes() {
         <Route path="/checkout/:productId" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/oppdater-passord" element={<UpdatePassword />} />
       </Route>
 
       <Route element={<MemberRoute />}>

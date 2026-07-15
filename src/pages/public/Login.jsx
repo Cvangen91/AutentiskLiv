@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../../features/auth/authService'
+import { login, resetPasswordForEmail } from '../../features/auth/authService'
 import { useAuth } from '../../features/auth/useAuth'
 import { useRole } from '../../hooks/useRole'
 
@@ -13,6 +13,10 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetMessage, setResetMessage] = useState('')
 
   async function handleLogin(e) {
     e.preventDefault()
@@ -26,6 +30,20 @@ function Login() {
     }
 
     setMessage('Innlogging vellykket')
+  }
+
+  async function handleForgotPassword(e) {
+    e.preventDefault()
+    setResetMessage('Sender e-post...')
+
+    const { error } = await resetPasswordForEmail(resetEmail)
+
+    if (error) {
+      setResetMessage(`Noe gikk galt: ${error.message}`)
+      return
+    }
+
+    setResetMessage('Hvis e-posten finnes hos oss, har vi sendt en lenke for å tilbakestille passordet.')
   }
 
   useEffect(() => {
@@ -94,9 +112,43 @@ function Login() {
   >
     Logg inn
   </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      setShowForgotPassword((prev) => !prev)
+      setResetMessage('')
+    }}
+    className="text-left text-sm font-semibold text-[#6f7c63] transition hover:opacity-80"
+  >
+    Glemt passord?
+  </button>
 </form>
 
             {message && <p className="mt-4 text-sm text-stone-700">{message}</p>}
+
+            {showForgotPassword && (
+              <form onSubmit={handleForgotPassword} className="mt-5 grid gap-3 border-t border-stone-200 pt-5">
+                <label htmlFor="reset-email" className="text-sm font-semibold text-stone-700">
+                  Skriv inn e-posten din, så sender vi deg en lenke for å tilbakestille passordet
+                </label>
+                <input
+                  id="reset-email"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                  className="w-full rounded-2xl border border-stone-200 bg-white/90 px-4 py-3 text-stone-900 outline-none transition focus:border-[#6f7c63] focus:ring-4 focus:ring-[#6f7c63]/15"
+                />
+                <button
+                  type="submit"
+                  className="rounded-2xl border border-[#6f7c63] px-5 py-3 font-semibold text-[#6f7c63] transition hover:bg-[#6f7c63] hover:text-white"
+                >
+                  Send lenke
+                </button>
+                {resetMessage && <p className="text-sm text-stone-700">{resetMessage}</p>}
+              </form>
+            )}
           </div>
         </section>
 
