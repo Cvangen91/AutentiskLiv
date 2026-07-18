@@ -223,16 +223,21 @@ export default function AdminCoursesTab() {
           }
         }
 
-        const { error: productError } = await supabase
+        const { data: updatedProduct, error: productError } = await supabase
           .from('products')
           .update({
             ...payload,
             cover_image_url: coverImageUrl,
           })
           .eq('id', editingCourse.id)
+          .select()
 
         if (productError) {
           throw new Error(`Feil ved oppdatering av produkt: ${productError.message}`)
+        }
+
+        if (!updatedProduct || updatedProduct.length === 0) {
+          throw new Error('Feil ved oppdatering av produkt: endringen ble ikke lagret (mulig tilgangsbegrensning). Kontakt utvikler.')
         }
 
         const coursePayload = {
@@ -245,13 +250,18 @@ export default function AdminCoursesTab() {
         }
 
         if (editingCourse.courseId) {
-          const { error: courseError } = await supabase
+          const { data: updatedCourse, error: courseError } = await supabase
             .from('courses')
             .update(coursePayload)
             .eq('id', editingCourse.courseId)
+            .select()
 
           if (courseError) {
             throw new Error(`Feil ved oppdatering av kurs: ${courseError.message}`)
+          }
+
+          if (!updatedCourse || updatedCourse.length === 0) {
+            throw new Error('Feil ved oppdatering av kurs: endringen ble ikke lagret (mulig tilgangsbegrensning). Kontakt utvikler.')
           }
         } else {
           const { error: courseError } = await supabase
