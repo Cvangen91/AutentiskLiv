@@ -203,131 +203,121 @@ export default function AdminCoursesTab() {
 
     setLoading(true)
 
-    const payload = {
-      title: formValues.title,
-      slug: editingCourse?.slug || createSlug(formValues.title),
-      description: formValues.description,
-      price_nok: Number(formValues.priceNok),
-      status: formValues.status,
-    }
+    try {
+      const payload = {
+        title: formValues.title,
+        slug: editingCourse?.slug || createSlug(formValues.title),
+        description: formValues.description,
+        price_nok: Number(formValues.priceNok),
+        status: formValues.status,
+      }
 
-    let coverImageUrl = editingCourse?.coverImageUrl || null
+      let coverImageUrl = editingCourse?.coverImageUrl || null
 
-    if (editingCourse) {
-      try {
+      if (editingCourse) {
         if (formValues.coverImageFile) {
-          coverImageUrl = await uploadCourseImage(formValues.coverImageFile, editingCourse.id)
+          try {
+            coverImageUrl = await uploadCourseImage(formValues.coverImageFile, editingCourse.id)
+          } catch (uploadError) {
+            throw new Error(`Feil ved opplasting av bilde: ${uploadError.message}`)
+          }
         }
-      } catch (uploadError) {
-        setMessage(`Feil ved opplasting av bilde: ${uploadError.message}`)
-        setLoading(false)
-        return
-      }
 
-      const { error: productError } = await supabase
-        .from('products')
-        .update({
-          ...payload,
-          cover_image_url: coverImageUrl,
-        })
-        .eq('id', editingCourse.id)
-
-      if (productError) {
-        setMessage(`Feil ved oppdatering av produkt: ${productError.message}`)
-        setLoading(false)
-        return
-      }
-
-      const coursePayload = {
-        has_capacity_limit: formValues.hasCapacityLimit,
-        capacity_limit: formValues.hasCapacityLimit ? Number(formValues.capacityLimit) : null,
-        delivery_mode: formValues.deliveryMode,
-        start_at: toIsoString(formValues.startAt),
-        location_text:
-          formValues.deliveryMode === 'physical' ? formValues.locationText || null : null,
-      }
-
-      if (editingCourse.courseId) {
-        const { error: courseError } = await supabase
-          .from('courses')
-          .update(coursePayload)
-          .eq('id', editingCourse.courseId)
-
-        if (courseError) {
-          setMessage(`Feil ved oppdatering av kurs: ${courseError.message}`)
-          setLoading(false)
-          return
-        }
-      } else {
-        const { error: courseError } = await supabase
-          .from('courses')
-          .insert({
-            product_id: editingCourse.id,
-            ...coursePayload,
+        const { error: productError } = await supabase
+          .from('products')
+          .update({
+            ...payload,
+            cover_image_url: coverImageUrl,
           })
+          .eq('id', editingCourse.id)
 
-        if (courseError) {
-          setMessage(`Produkt oppdatert, men feil ved oppretting av kursdetaljer: ${courseError.message}`)
-          setLoading(false)
-          return
+        if (productError) {
+          throw new Error(`Feil ved oppdatering av produkt: ${productError.message}`)
         }
-      }
 
-      setMessage('Kurs oppdatert!')
-      await refreshCourses()
-      setSelectedCourse(null)
-      setIsFormOpen(false)
-    } else {
-      const { data: product, error: productError } = await supabase
-        .from('products')
-        .insert({
-          ...payload,
-          product_type: 'course',
-          created_by: user.id,
-        })
-        .select()
-        .single()
-
-      if (productError) {
-        setMessage(`Feil ved lagring av produkt: ${productError.message}`)
-        setLoading(false)
-        return
-      }
-
-      try {
-        if (formValues.coverImageFile) {
-          coverImageUrl = await uploadCourseImage(formValues.coverImageFile, product.id)
-        }
-      } catch (uploadError) {
-        setMessage(`Produkt lagret, men feil ved opplasting av bilde: ${uploadError.message}`)
-        setLoading(false)
-        return
-      }
-
-      const { error: courseError } = await supabase
-        .from('courses')
-        .insert({
-          product_id: product.id,
+        const coursePayload = {
           has_capacity_limit: formValues.hasCapacityLimit,
           capacity_limit: formValues.hasCapacityLimit ? Number(formValues.capacityLimit) : null,
           delivery_mode: formValues.deliveryMode,
           start_at: toIsoString(formValues.startAt),
           location_text:
             formValues.deliveryMode === 'physical' ? formValues.locationText || null : null,
-        })
+        }
 
-      if (courseError) {
-        setMessage(`Produkt lagret, men feil ved oppretting av kurs: ${courseError.message}`)
-        setLoading(false)
-        return
+        if (editingCourse.courseId) {
+          const { error: courseError } = await supabase
+            .from('courses')
+            .update(coursePayload)
+            .eq('id', editingCourse.courseId)
+
+          if (courseError) {
+            throw new Error(`Feil ved oppdatering av kurs: ${courseError.message}`)
+          }
+        } else {
+          const { error: courseError } = await supabase
+            .from('courses')
+            .insert({
+              product_id: editingCourse.id,
+              ...coursePayload,
+            })
+
+          if (courseError) {
+            throw new Error(`Produkt oppdatert, men feil ved oppretting av kursdetaljer: ${courseError.message}`)
+          }
+        }
+
+        setMessage('Kurs oppdatert!')
+        await refreshCourses()
+        setSelectedCourse(null)
+        setIsFormOpen(false)
+      } else {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .insert({
+            ...payload,
+            product_type: 'course',
+            created_by: user.id,
+          })
+          .select()
+          .single()
+
+        if (productError) {
+          throw new Error(`Feil ved lagring av produkt: ${productError.message}`)
+        }
+
+        if (formValues.coverImageFile) {
+          try {
+            coverImageUrl = await uploadCourseImage(formValues.coverImageFile, product.id)
+          } catch (uploadError) {
+            throw new Error(`Produkt lagret, men feil ved opplasting av bilde: ${uploadError.message}`)
+          }
+        }
+
+        const { error: courseError } = await supabase
+          .from('courses')
+          .insert({
+            product_id: product.id,
+            has_capacity_limit: formValues.hasCapacityLimit,
+            capacity_limit: formValues.hasCapacityLimit ? Number(formValues.capacityLimit) : null,
+            delivery_mode: formValues.deliveryMode,
+            start_at: toIsoString(formValues.startAt),
+            location_text:
+              formValues.deliveryMode === 'physical' ? formValues.locationText || null : null,
+          })
+
+        if (courseError) {
+          throw new Error(`Produkt lagret, men feil ved oppretting av kurs: ${courseError.message}`)
+        }
+
+        setMessage('Kurs opprettet!')
+        await refreshCourses()
+        setIsFormOpen(false)
       }
-
-      setMessage('Kurs opprettet!')
-      await refreshCourses()
-      setIsFormOpen(false)
+    } catch (err) {
+      setMessage(err.message || 'En uventet feil oppstod under lagring. Prøv igjen.')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   if (coursesError) {
@@ -354,7 +344,13 @@ export default function AdminCoursesTab() {
       </div>
 
       {message && (
-        <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">{message}</div>
+        <div
+          className={`rounded-lg p-4 text-sm ${
+            message.toLowerCase().includes('feil') ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
+          }`}
+        >
+          {message}
+        </div>
       )}
 
       {isFormOpen && (

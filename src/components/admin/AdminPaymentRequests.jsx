@@ -220,108 +220,113 @@ export default function AdminPaymentRequests() {
   }
 
   async function markInvoiceSent(req) {
-    const { error } = await supabase
-      .from('payment_requests')
-      .update({ status: 'invoice_sent' })
-      .eq('id', req.id)
+    try {
+      const { error } = await supabase
+        .from('payment_requests')
+        .update({ status: 'invoice_sent' })
+        .eq('id', req.id)
 
-    if (error) {
-      alert(`Feil ved oppdatering: ${error.message}`)
-      return
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      await fetchPaymentRequests()
+    } catch (err) {
+      alert(`Feil ved oppdatering: ${err.message || 'En uventet feil oppstod.'}`)
     }
-
-    await fetchPaymentRequests()
   }
 
   async function deleteRequest(reqId) {
     if (!confirm('Slett bestillingen? Dette kan ikke angres.')) return
 
-    const request = requests.find((item) => item.id === reqId)
-    const productId = request?.orders?.order_items?.[0]?.product_id || null
+    try {
+      const request = requests.find((item) => item.id === reqId)
+      const productId = request?.orders?.order_items?.[0]?.product_id || null
 
-    if (request?.order_id) {
-      if (productId) {
-        const { data: bookingRows, error: bookingLookupError } = await supabase
-          .from('bookings')
-          .select('id, time_slot_id, booking_status, status, created_at')
-          .eq('user_id', request.user_id)
-          .eq('product_id', productId)
-          .neq('booking_status', 'cancelled')
-          .order('created_at', { ascending: false })
-          .limit(1)
-
-        if (bookingLookupError) {
-          alert(`Feil ved oppslag av booking: ${bookingLookupError.message}`)
-          return
-        }
-
-        const booking = bookingRows?.[0] || null
-
-        if (booking?.id) {
-          const { error: bookingCancelError } = await supabase
+      if (request?.order_id) {
+        if (productId) {
+          const { data: bookingRows, error: bookingLookupError } = await supabase
             .from('bookings')
-            .update({ booking_status: 'cancelled', status: 'cancelled' })
-            .eq('id', booking.id)
+            .select('id, time_slot_id, booking_status, status, created_at')
+            .eq('user_id', request.user_id)
+            .eq('product_id', productId)
+            .neq('booking_status', 'cancelled')
+            .order('created_at', { ascending: false })
+            .limit(1)
 
-          if (bookingCancelError) {
-            alert(`Feil ved kansellering av booking: ${bookingCancelError.message}`)
-            return
+          if (bookingLookupError) {
+            throw new Error(`Feil ved oppslag av booking: ${bookingLookupError.message}`)
           }
 
-          if (booking.time_slot_id) {
-            const { error: slotError } = await supabase
-              .from('time_slots')
-              .update({ status: 'available' })
-              .eq('id', booking.time_slot_id)
+          const booking = bookingRows?.[0] || null
 
-            if (slotError) {
-              alert(`Feil ved frigjøring av tidslott: ${slotError.message}`)
-              return
+          if (booking?.id) {
+            const { error: bookingCancelError } = await supabase
+              .from('bookings')
+              .update({ booking_status: 'cancelled', status: 'cancelled' })
+              .eq('id', booking.id)
+
+            if (bookingCancelError) {
+              throw new Error(`Feil ved kansellering av booking: ${bookingCancelError.message}`)
+            }
+
+            if (booking.time_slot_id) {
+              const { error: slotError } = await supabase
+                .from('time_slots')
+                .update({ status: 'available' })
+                .eq('id', booking.time_slot_id)
+
+              if (slotError) {
+                throw new Error(`Feil ved frigjøring av tidslott: ${slotError.message}`)
+              }
             }
           }
         }
+
+        const { error: orderCancelError } = await supabase
+          .from('orders')
+          .update({ payment_status: 'cancelled' })
+          .eq('id', request.order_id)
+
+        if (orderCancelError) {
+          throw new Error(`Feil ved oppdatering av ordre: ${orderCancelError.message}`)
+        }
       }
 
-      const { error: orderCancelError } = await supabase
-        .from('orders')
-        .update({ payment_status: 'cancelled' })
-        .eq('id', request.order_id)
+      const { error: requestDeleteError } = await supabase
+        .from('payment_requests')
+        .update({ status: 'deleted' })
+        .eq('id', reqId)
 
-      if (orderCancelError) {
-        alert(`Feil ved oppdatering av ordre: ${orderCancelError.message}`)
-        return
+      if (requestDeleteError) {
+        throw new Error(`Feil ved sletting: ${requestDeleteError.message}`)
       }
+
+      await fetchPaymentRequests()
+    } catch (err) {
+      alert(err.message || 'En uventet feil oppstod.')
     }
-
-    const { error: requestDeleteError } = await supabase
-      .from('payment_requests')
-      .update({ status: 'deleted' })
-      .eq('id', reqId)
-
-    if (requestDeleteError) {
-      alert(`Feil ved sletting: ${requestDeleteError.message}`)
-      return
-    }
-
-    await fetchPaymentRequests()
   }
 
   async function updateStatus(req, newStatus) {
-    if (newStatus === 'paid') {
-      await createEnrollmentForPaidRequest(req)
+    try {
+      if (newStatus === 'paid') {
+        await createEnrollmentForPaidRequest(req)
+      }
+
+      const { error } = await supabase
+        .from('payment_requests')
+        .update({ status: newStatus })
+        .eq('id', req.id)
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      await fetchPaymentRequests()
+    } catch (err) {
+      alert(`Feil ved oppdatering: ${err.message || 'En uventet feil oppstod.'}`)
     }
-
-    const { error } = await supabase
-      .from('payment_requests')
-      .update({ status: newStatus })
-      .eq('id', req.id)
-
-    if (error) {
-      alert(`Feil ved oppdatering: ${error.message}`)
-      return
-    }
-
-    await fetchPaymentRequests()
   }
 
   if (loading) {

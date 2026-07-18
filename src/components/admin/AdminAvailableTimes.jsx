@@ -152,52 +152,53 @@ export default function AdminAvailableTimes() {
 
     setSubmitting(true)
 
-    if (isEditing && editingSlotId) {
-      const { error: updateError } = await supabase
-        .from('time_slots')
-        .update({
+    try {
+      if (isEditing && editingSlotId) {
+        const { error: updateError } = await supabase
+          .from('time_slots')
+          .update({
+            start_time: startTime.toISOString(),
+            end_time: endTime.toISOString(),
+            notes: formData.notes || null,
+          })
+          .eq('id', editingSlotId)
+
+        if (updateError) {
+          throw new Error(`Feil: ${updateError.message}`)
+        }
+
+        setMessage('Ledig tid oppdatert!')
+      } else {
+        const { error: insertError } = await supabase.from('time_slots').insert({
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
+          status: 'available',
           notes: formData.notes || null,
+          created_by: user.id,
         })
-        .eq('id', editingSlotId)
 
-      if (updateError) {
-        setMessage(`Feil: ${updateError.message}`)
-        setSubmitting(false)
-        return
+        if (insertError) {
+          throw new Error(`Feil: ${insertError.message}`)
+        }
+
+        setMessage('Ledig tid lagt til!')
       }
 
-      setMessage('Ledig tid oppdatert!')
-    } else {
-      const { error: insertError } = await supabase.from('time_slots').insert({
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        status: 'available',
-        notes: formData.notes || null,
-        created_by: user.id,
+      setFormData({
+        date: '',
+        start_time: '',
+        end_time: '',
+        notes: '',
       })
-
-      if (insertError) {
-        setMessage(`Feil: ${insertError.message}`)
-        setSubmitting(false)
-        return
-      }
-
-      setMessage('Ledig tid lagt til!')
+      setEditingSlotId(null)
+      setIsEditing(false)
+      await fetchTimeSlots()
+      setShowForm(false)
+    } catch (err) {
+      setMessage(err.message || 'En uventet feil oppstod under lagring. Prøv igjen.')
+    } finally {
+      setSubmitting(false)
     }
-
-    setFormData({
-      date: '',
-      start_time: '',
-      end_time: '',
-      notes: '',
-    })
-    setEditingSlotId(null)
-    setIsEditing(false)
-    await fetchTimeSlots()
-    setShowForm(false)
-    setSubmitting(false)
   }
 
   async function handleDelete(id) {
@@ -205,14 +206,17 @@ export default function AdminAvailableTimes() {
       return
     }
 
-    const { error: deleteError } = await supabase.from('time_slots').delete().eq('id', id)
+    try {
+      const { error: deleteError } = await supabase.from('time_slots').delete().eq('id', id)
 
-    if (deleteError) {
-      alert(`Feil: ${deleteError.message}`)
-      return
+      if (deleteError) {
+        throw new Error(deleteError.message)
+      }
+
+      await fetchTimeSlots()
+    } catch (err) {
+      alert(`Feil: ${err.message || 'En uventet feil oppstod.'}`)
     }
-
-    await fetchTimeSlots()
   }
 
   if (loading) return <div className="text-stone-600">Laster ledige tider...</div>
@@ -231,7 +235,15 @@ export default function AdminAvailableTimes() {
 
       </div>
 
-      {message && <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">{message}</div>}
+      {message && (
+        <div
+          className={`rounded-lg p-4 text-sm ${
+            message.toLowerCase().includes('feil') ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
+          }`}
+        >
+          {message}
+        </div>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-stone-200 bg-stone-50 p-4">
