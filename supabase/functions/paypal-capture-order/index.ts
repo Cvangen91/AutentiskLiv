@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 import { paypalFetch } from '../_shared/paypal.ts'
+import { sendEmail, renderEmailLayout } from '../_shared/email.ts'
 
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -65,7 +66,7 @@ Deno.serve(async (req) => {
 
     const { data: paymentRequest, error: paymentRequestError } = await supabase
       .from('payment_requests')
-      .select('id, order_id, user_id, status, provider_reference')
+      .select('id, order_id, user_id, status, provider_reference, billing_name, billing_email')
       .eq('order_id', localOrderId)
       .maybeSingle()
 
@@ -109,12 +110,55 @@ Deno.serve(async (req) => {
 
     const { data: orderItem } = await serviceClient
       .from('order_items')
-      .select('product_id')
+      .select('product_id, unit_price_nok, products (title)')
       .eq('order_id', localOrderId)
       .maybeSingle()
 
     if (orderItem?.product_id) {
       await enrollUserInCourse(serviceClient, user.id, orderItem.product_id)
+    }
+
+    // Purchase notification emails are best-effort: a failure here must never
+    // turn an already-successful payment into an error response for the customer.
+    try {
+      const productTitle = orderItem?.products?.title || 'et produkt'
+      const customerName = paymentRequest.billing_name || user.email
+      const customerEmail = paymentRequest.billing_email || user.email
+      const amount = orderItem?.unit_price_nok
+
+      const anneEmail = Deno.env.get('ANNE_NOTIFICATION_EMAIL')
+      if (anneEmail) {
+        await sendEmail({
+          to: anneEmail,
+          subject: `Nytt kjøp: ${productTitle}`,
+          html: renderEmailLayout(`
+            <p style="margin:0 0 16px 0;">Hei Anne,</p>
+            <p style="margin:0 0 16px 0;">Det har kommet inn et nytt kjøp på Autentisk Liv:</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0; font-size:15px;">
+              <tr><td style="padding:4px 0; color:#8a8a8a;">Kunde</td><td style="padding:4px 0;">${customerName} (${customerEmail})</td></tr>
+              <tr><td style="padding:4px 0; color:#8a8a8a;">Produkt</td><td style="padding:4px 0;">${productTitle}</td></tr>
+              ${amount ? `<tr><td style="padding:4px 0; color:#8a8a8a;">Beløp</td><td style="padding:4px 0;">${amount} kr</td></tr>` : ''}
+              <tr><td style="padding:4px 0; color:#8a8a8a;">Ordre-ID</td><td style="padding:4px 0;">${localOrderId}</td></tr>
+            </table>
+          `),
+        })
+      }
+
+      if (customerEmail) {
+        await sendEmail({
+          to: customerEmail,
+          subject: 'Bekreftelse på ditt kjøp hos Autentisk Liv',
+          html: renderEmailLayout(`
+            <p style="margin:0 0 16px 0;">Hei ${customerName},</p>
+            <p style="margin:0 0 16px 0;">Tusen takk for at du har kjøpt <strong>${productTitle}</strong> hos Autentisk Liv${amount ? ` for ${amount} kr` : ''}. Betalingen din er mottatt, og bestillingen er nå bekreftet.</p>
+            <p style="margin:0 0 16px 0;">Du finner kjøpet ditt under Min side når du er logget inn.</p>
+            <p style="margin:0 0 16px 0;">Har du spørsmål, er det bare å ta kontakt. </p>
+            <p style="margin:0; font-size:13px; color:#8a8a8a;">Dette er en automatisk generert e-post, og denne adressen blir ikke lest${anneEmail ? ` — send heller spørsmål direkte til Anne på <a href="mailto:${anneEmail}" style="color:#8a8a8a;">${anneEmail}</a>` : ''}.</p>
+          `),
+        })
+      }
+    } catch (emailError) {
+      console.error('[paypal-capture-order] Klarte ikke å sende e-post', emailError)
     }
 
     return jsonResponse({ status: 'COMPLETED' })
